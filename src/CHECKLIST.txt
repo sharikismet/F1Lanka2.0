@@ -1,0 +1,72 @@
+═══════════════════════════════════════════════════════════
+           F1 LANKA - ONE-CLICK DEPLOY CHECKLIST
+═══════════════════════════════════════════════════════════
+
+✅ PROJECT CLEANED UP - All unnecessary docs removed!
+
+═══════════════════════════════════════════════════════════
+                    WHAT YOU NEED TO DO
+═══════════════════════════════════════════════════════════
+
+STEP 1: PUSH TO GITHUB
+───────────────────────
+git add .
+git commit -m "Clean project for deployment"
+git push
+
+STEP 2: DEPLOY TO VERCEL
+───────────────────────
+1. Go to: https://vercel.com/new
+2. Import your GitHub repo
+3. Add environment variables:
+   - VITE_SUPABASE_URL
+   - VITE_SUPABASE_ANON_KEY
+4. Click "Deploy"
+
+STEP 3: SETUP SUPABASE
+───────────────────────
+1. Create database table (SQL in DEPLOY.md)
+2. Deploy Edge Function:
+   supabase functions deploy make-server-a97df12b
+
+═══════════════════════════════════════════════════════════
+                    FILES IN YOUR PROJECT
+═══════════════════════════════════════════════════════════
+
+ESSENTIAL:
+✓ App.tsx - Main app
+✓ components/ - All React components
+✓ lib/ - API and utilities
+✓ styles/ - CSS
+✓ supabase/ - Backend functions
+✓ .vercelignore - Ignores supabase folder
+✓ vercel.json - Build config
+✓ .gitignore - Git ignore rules
+
+DOCUMENTATION:
+✓ README.md - Project overview
+✓ DEPLOY.md - Deployment instructions
+✓ This checklist
+
+═══════════════════════════════════════════════════════════
+                    YOUR CONTACT INFO
+═══════════════════════════════════════════════════════════
+
+WhatsApp: +94 71 077 3717
+Email: f1lankabusiness@gmail.com
+
+Already configured in the app! ✅
+
+═══════════════════════════════════════════════════════════
+                    TOTAL TIME: ~10 MINUTES
+═══════════════════════════════════════════════════════════
+
+Push to GitHub:    2 min
+Deploy to Vercel:  3 min
+Setup Supabase:    5 min
+
+═══════════════════════════════════════════════════════════
+
+           YOUR F1 LANKA STORE IS READY TO DEPLOY! 🏁
+
+═══════════════════════════════════════════════════════════

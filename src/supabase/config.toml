@@ -1,0 +1,6 @@
+[project]
+# Your Supabase project reference ID
+# ref = "sqgqsdexujosloavpuso"
+
+[functions.make-server-a97df12b]
+verify_jwt = false

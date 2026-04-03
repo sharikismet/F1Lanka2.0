@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Button } from './ui/button';
+import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
@@ -8,7 +9,6 @@ import {
   CarouselPrevious,
 } from "./ui/carousel";
 
-// Your original image plus two additional placeholders for the slideshow
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1742412615437-4cefe005d82c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxGb3JtdWxhJTIwMSUyMHJhY2luZyUyMGNhciUyMHNwZWVkfGVufDF8fHx8MTc3NTE0MDc2MHww&ixlib=rb-4.1.0&q=80&w=1080',
   'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/products/2025-drivers-hero-shot-3.jpg',
@@ -16,26 +16,33 @@ const HERO_IMAGES = [
 ];
 
 export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
+  // 1. Store the plugin in a ref so it doesn't get recreated on every render
+  const plugin = React.useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
+
   return (
     <section className="relative w-full overflow-hidden group">
       <Carousel 
         opts={{ loop: true }} 
+        // 2. Pass the stable reference
+        plugins={[plugin.current]}
+        // 3. Pause the autoplay timer when hovering over the banner
+        onMouseEnter={plugin.current.stop}
+        onMouseLeave={plugin.current.reset}
         className="w-full"
       >
         <CarouselContent>
           {HERO_IMAGES.map((src, index) => (
             <CarouselItem key={index}>
-              {/* Keep your exact height styling */}
               <div className="relative w-full h-[340px] md:h-[440px] lg:h-[520px]">
                 <img
                   src={src}
                   alt={`Formula 1 Racing ${index + 1}`}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                {/* Your original gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
                 
-                {/* Your original content wrapper */}
                 <div className="absolute inset-0 flex flex-col justify-center">
                   <div className="container mx-auto px-4">
                     <div className="max-w-lg">
@@ -62,7 +69,7 @@ export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
           ))}
         </CarouselContent>
         
-        {/* Navigation arrows - Hidden on mobile, visible on desktop */}
+        {/* Navigation arrows */}
         <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#FF2800] border-none text-white hover:text-white transition-colors" />
           <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-[#FF2800] border-none text-white hover:text-white transition-colors" />

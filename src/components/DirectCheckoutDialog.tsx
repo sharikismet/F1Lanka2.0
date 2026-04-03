@@ -6,7 +6,7 @@ import { Textarea } from './ui/textarea';
 import { useState } from 'react';
 import { createOrder } from '../lib/api';
 import type { CartItem } from '../lib/CartContext';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { useCart } from '../lib/CartContext';
 import { Loader2 } from 'lucide-react';
 
@@ -45,7 +45,6 @@ export function DirectCheckoutDialog({
           productName: item.name,
           quantity: item.quantity,
           price: item.price,
-          // Include variant information
           selectedSize: item.selectedSize,
           selectedWaistSize: item.selectedWaistSize,
           selectedScale: item.selectedScale,
@@ -59,13 +58,37 @@ export function DirectCheckoutDialog({
         status: 'pending' as const,
       };
 
-      // Create order
+      // Create order in database
       const order = await createOrder(orderData);
 
       if (order) {
         toast.success('Order placed successfully!', {
-          description: 'We will contact you shortly to confirm your order.',
+          description: 'Redirecting to WhatsApp to confirm...',
         });
+
+        // 1. GENERATE THE DIRECT MESSAGE
+        let msg = `*New Order Request*\n\n`;
+        msg += `*Name:* ${formData.customerName}\n`;
+        msg += `*Phone:* ${formData.customerPhone}\n`;
+        msg += `*Address:* ${formData.shippingAddress}\n\n`;
+        msg += `*Order Items:*\n`;
+        
+        cartItems.forEach(item => {
+          let variants = [];
+          if (item.selectedSize) variants.push(`Size: ${item.selectedSize}`);
+          if (item.selectedWaistSize) variants.push(`Waist: ${item.selectedWaistSize}"`);
+          if (item.selectedScale) variants.push(`Scale: ${item.selectedScale}`);
+          
+          let variantText = variants.length > 0 ? ` (${variants.join(', ')})` : '';
+          msg += `- ${item.quantity}x ${item.name}${variantText} - LKR ${(item.price * item.quantity).toFixed(2)}\n`;
+        });
+        
+        if (formData.notes) msg += `\n*Notes:* ${formData.notes}\n`;
+        msg += `\n*Total:* LKR ${totalPrice.toFixed(2)}`;
+
+        // 2. TRIGGER WHATSAPP REDIRECT with your number
+        const storePhone = "94710773717"; 
+        window.open(`https://wa.me/${storePhone}?text=${encodeURIComponent(msg)}`, '_blank');
 
         // Clear form and cart
         setFormData({
@@ -80,7 +103,6 @@ export function DirectCheckoutDialog({
       }
     } catch (error) {
       console.error('Error placing order:', error);
-      
       let errorMessage = 'Please try again later.';
       
       if (error instanceof TypeError && error.message === 'Failed to fetch') {

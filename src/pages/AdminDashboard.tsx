@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { BarChart3, Package, ShoppingCart, TrendingUp, DollarSign, Plus, Search, Edit, Trash2, Download, Store, LogOut, ImagePlus, Loader2, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -31,7 +31,6 @@ const defaultProduct = {
   sizes: [] as string[], waistSizes: [] as string[], modelCarScale: '', material: '',
 };
 
-// Product form dialog content (shared between add/edit) - moved outside to prevent re-creation
 interface ProductFormContentProps {
   isEdit: boolean;
   newProduct: typeof defaultProduct;
@@ -335,8 +334,10 @@ export function AdminDashboard() {
     e.preventDefault();
     setLoginLoading(true);
     setLoginError('');
+
     try {
       const { session, error } = await signIn(loginEmail, loginPassword);
+
       if (error) {
         setLoginError(error);
       } else if (session) {
@@ -535,7 +536,6 @@ export function AdminDashboard() {
 
       for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
-        
         const values = lines[i].split(',');
         const productData: any = {
           name: values[0]?.replace(/"/g, ''),
@@ -650,6 +650,7 @@ export function AdminDashboard() {
                   )}
                 </Button>
               </form>
+              
               <div className="mt-4 text-center text-sm text-gray-500">
                 <p>Default credentials:</p>
                 <p className="font-mono text-xs mt-1">admin@f1lanka.com / admin123</p>
@@ -909,12 +910,34 @@ export function AdminDashboard() {
                       ) : orders.map(order => (
                         <TableRow key={order.id} className="hover:bg-gray-50">
                           <TableCell className="font-mono text-xs">{order.id.slice(0, 8)}</TableCell>
+                          
+                          {/* Expanded Customer Info with Address */}
                           <TableCell>
                             <div className="font-medium text-sm">{order.customerName}</div>
                             <div className="text-xs text-gray-400">{order.customerPhone}</div>
+                            <div className="text-xs text-gray-500 mt-1 max-w-[200px] whitespace-normal">
+                              {order.shippingAddress}
+                            </div>
                           </TableCell>
+
                           <TableCell className="text-sm">{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-                          <TableCell className="text-sm">{order.items.length}</TableCell>
+                          
+                          {/* Detailed Items List with Sizes/Variants */}
+                          <TableCell>
+                            <div className="flex flex-col gap-1 max-w-[300px]">
+                              {order.items?.map((item: any, idx: number) => (
+                                <div key={idx} className="text-xs leading-relaxed">
+                                  <span className="font-medium">{item.quantity}x</span> {item.productName}
+                                  {(item.selectedSize || item.selectedWaistSize || item.selectedScale) && (
+                                    <span className="text-gray-500 ml-1">
+                                      ({item.selectedSize || item.selectedWaistSize || item.selectedScale})
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </TableCell>
+
                           <TableCell className="text-sm font-medium">Rs. {order.totalAmount.toLocaleString()}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={

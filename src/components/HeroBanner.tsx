@@ -16,20 +16,21 @@ const HERO_IMAGES = [
 ];
 
 export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
-  // 1. Store the plugin in a ref so it doesn't get recreated on every render
+  // 1. Updated Autoplay config to prevent freezing
   const plugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
+    Autoplay({ 
+      delay: 4000, // 4 seconds per slide
+      stopOnInteraction: false, 
+      stopOnMouseEnter: true 
+    })
   );
 
   return (
     <section className="relative w-full overflow-hidden group">
       <Carousel 
         opts={{ loop: true }} 
-        // 2. Pass the stable reference
         plugins={[plugin.current]}
-        // 3. Pause the autoplay timer when hovering over the banner
-        onMouseEnter={plugin.current.stop}
-        onMouseLeave={plugin.current.reset}
+        // 2. Removed the manual onMouseEnter/Leave props because the plugin handles it now!
         className="w-full"
       >
         <CarouselContent>

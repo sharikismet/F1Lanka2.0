@@ -652,8 +652,8 @@ export function AdminDashboard() {
               </form>
               
               <div className="mt-4 text-center text-sm text-gray-500">
-                <p>Default credentials:</p>
-                <p className="font-mono text-xs mt-1">admin@f1lanka.com / admin123</p>
+                <p>Designed by::</p>
+                <p className="font-mono text-xs mt-1">Tuan Sharik Ismet AKA Mubtakar</p>
               </div>
             </CardContent>
           </Card>

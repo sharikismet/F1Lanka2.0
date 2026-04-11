@@ -19,22 +19,24 @@ export function CartDrawer({ open, onOpenChange, whatsappNumber }: CartDrawerPro
   const handleWhatsAppCheckout = () => {
     if (items.length === 0) return;
 
-    // Create detailed message with all items
-    let message = `Hi! I'd like to order the following items:\\n\\n`;
+    // Use single \n for line breaks and * for WhatsApp bold formatting
+    let message = `*New Order Request*\n\n`;
     
     items.forEach((item, index) => {
-      message += `${index + 1}. ${item.name}\\n`;
+      message += `*${index + 1}. ${item.name}*\n`;
+      
       // Add variant info if present
-      if (item.selectedSize) message += `   Size: ${item.selectedSize}\\n`;
-      if (item.selectedWaistSize) message += `   Waist Size: ${item.selectedWaistSize}"\\n`;
-      if (item.selectedScale) message += `   Scale: ${item.selectedScale}\\n`;
-      message += `   Quantity: ${item.quantity}\\n`;
-      message += `   Price: LKR ${item.price.toFixed(2)} each\\n`;
-      message += `   Subtotal: LKR ${(item.price * item.quantity).toFixed(2)}\\n\\n`;
+      if (item.selectedSize) message += `  • Size: ${item.selectedSize}\n`;
+      if (item.selectedWaistSize) message += `  • Waist Size: ${item.selectedWaistSize}"\n`;
+      if (item.selectedScale) message += `  • Scale: ${item.selectedScale}\n`;
+      
+      message += `  • Quantity: ${item.quantity}\n`;
+      message += `  • Price: LKR ${item.price.toFixed(2)} each\n`;
+      message += `  • Subtotal: LKR ${(item.price * item.quantity).toFixed(2)}\n\n`;
     });
 
-    message += `Total Items: ${totalItems}\\n`;
-    message += `Total Amount: LKR ${totalPrice.toFixed(2)}\\n\\n`;
+    message += `*Total Items:* ${totalItems}\n`;
+    message += `*Total Amount:* LKR ${totalPrice.toFixed(2)}\n\n`;
     message += `Please confirm availability and provide payment details. Thank you!`;
 
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
@@ -43,7 +45,7 @@ export function CartDrawer({ open, onOpenChange, whatsappNumber }: CartDrawerPro
     // Optionally clear cart after checkout
     // clearCart();
   };
-
+  
   const handleDirectCheckout = () => {
     setShowDirectCheckout(true);
   };

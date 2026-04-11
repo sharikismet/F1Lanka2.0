@@ -17,30 +17,38 @@ function InstagramIcon() {
 export function FloatingButtons() {
   return (
     <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-      {/* Instagram */}
+      
+      {/* Instagram Button */}
       <a
         href={INSTAGRAM_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform text-white"
+        // Added 'relative' so the pulse stays contained
+        className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform text-white overflow-visible"
         style={{
           background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
         }}
-        title="Follow us on Instagram"
+        title="Follow us on Instagram" 
       >
         <InstagramIcon />
+        {/* Pink pulse for Instagram */}
+        <span className="absolute inset-0 rounded-full bg-[#cc2366] animate-ping opacity-55 -z-10"></span>
       </a>
 
-      {/* WhatsApp */}
+      {/* WhatsApp Button */}
       <a
         href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg hover:scale-110 transition-transform text-white"
+        // Added 'relative' and 'bg-[#25D366]'
+        className="relative w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg hover:scale-110 transition-transform text-white"
         title="Chat with us on WhatsApp"
       >
         <MessageCircle className="w-7 h-7" />
+        {/* Green pulse for WhatsApp */}
+        <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-75 -z-10"></span>
       </a>
+      
     </div>
   );
 }

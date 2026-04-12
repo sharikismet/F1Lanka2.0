@@ -14,6 +14,7 @@ import { toast } from 'sonner@2.0.3';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { useNavigate } from 'react-router';
+import { NextRaceCountdown } from '../components/NextRaceCountdown';
 
 const WHATSAPP_NUMBER = '94710773717';
 
@@ -128,6 +129,12 @@ export function StoreFront() {
           </div>
         )}
       </div>
+
+      {/* Next Race Countdown - Full Width Above Footer */}
+      <NextRaceCountdown 
+        raceName="Miami Grand Prix" 
+        targetDate="2026-05-03T15:30:00Z" 
+      />
 
       <ProductDetailDialog product={selectedProduct} open={dialogOpen} onOpenChange={setDialogOpen} />
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />

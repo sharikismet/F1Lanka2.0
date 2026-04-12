@@ -127,10 +127,16 @@ export function CartDrawer({ open, onOpenChange, whatsappNumber }: CartDrawerPro
                             variant="outline"
                             className="h-8 w-8 p-0"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            disabled={item.stockQuantity !== undefined && item.quantity >= item.stockQuantity}
+                            disabled={(() => {
+                              const variantKey = item.selectedSize || item.selectedWaistSize || item.selectedScale;
+                              const maxStock = (item.variantStock && variantKey) 
+                                ? item.variantStock[variantKey] 
+                                : item.stockQuantity;
+                              return maxStock !== undefined && item.quantity >= maxStock;
+                            })()}
                           >
                             <Plus className="w-3 h-3" />
-                          </Button>
+                            </Button>
 
                           {/* Remove Button */}
                           <Button

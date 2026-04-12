@@ -169,10 +169,6 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
               </div>
             </NavDropdown>
 
-            <button onClick={() => navigateToShop({})} className="px-4 py-3 text-sm font-medium text-gray-700 hover:text-[#FF2800] transition-colors">
-              Shop By Driver
-            </button>
-
             {/* Men */}
             <NavDropdown label="Men" active={activeDropdown === 'men'} onEnter={() => setActiveDropdown('men')} onLeave={() => setActiveDropdown(null)}>
               <div className="p-4 w-48 space-y-1">

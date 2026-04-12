@@ -29,6 +29,7 @@ const defaultProduct = {
   name: '', price: '', originalPrice: '', image: '', category: '', gender: 'all',
   team: '', driver: '', description: '', stockQuantity: '', isClearance: false,
   sizes: [] as string[], waistSizes: [] as string[], modelCarScale: '', material: '',
+  variantStock: {} as Record<string, number>, // Added variant tracking
 };
 
 interface ProductFormContentProps {
@@ -59,6 +60,17 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
   const shouldShowSizes = ['T-Shirts', 'Hoodies'].includes(newProduct.category);
   const shouldShowWaistSizes = newProduct.category === 'Pants';
   const shouldShowModelCarOptions = newProduct.category === 'Model Cars';
+
+  // Helper to update individual variant stock
+  const updateVariantStock = (variant: string, qty: number) => {
+    setNewProduct(prev => ({
+      ...prev,
+      variantStock: {
+        ...(prev.variantStock || {}),
+        [variant]: qty
+      }
+    }));
+  };
 
   return (
     <div className="grid gap-5 py-4">
@@ -145,46 +157,84 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
 
       {/* Sizes for T-Shirts / Hoodies */}
       {shouldShowSizes && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label className="text-sm font-semibold">Available Sizes</Label>
-          <div className="flex flex-wrap gap-2">
-            {SIZES.map(size => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => toggleSize(size)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
-                  newProduct.sizes.includes(size)
-                    ? 'bg-[#FF2800] text-white border-[#FF2800]'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF2800]'
-                }`}
-              >
-                {size}
-              </button>
-            ))}
+          <div className="flex flex-col gap-2">
+            {SIZES.map(size => {
+              const isSelected = newProduct.sizes.includes(size);
+              return (
+                <div key={size} className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleSize(size)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border w-16 text-center transition-all ${
+                      isSelected
+                        ? 'bg-[#FF2800] text-white border-[#FF2800]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF2800]'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                  
+                  {/* Dynamic Stock Input for this specific size */}
+                  {isSelected && (
+                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                      <Label className="text-xs text-gray-500 whitespace-nowrap">Stock:</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        className="w-24 h-8 text-sm"
+                        value={newProduct.variantStock?.[size] ?? ''}
+                        onChange={(e) => updateVariantStock(size, parseInt(e.target.value) || 0)}
+                        placeholder="0"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Waist Sizes for Pants */}
       {shouldShowWaistSizes && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Label className="text-sm font-semibold">Waist Sizes</Label>
-          <div className="flex flex-wrap gap-2">
-            {WAIST_SIZES.map(size => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => toggleWaistSize(size)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
-                  newProduct.waistSizes.includes(size)
-                    ? 'bg-[#FF2800] text-white border-[#FF2800]'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF2800]'
-                }`}
-              >
-                {size}"
-              </button>
-            ))}
+          <div className="flex flex-col gap-2">
+            {WAIST_SIZES.map(size => {
+              const isSelected = newProduct.waistSizes.includes(size);
+              return (
+                <div key={size} className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleWaistSize(size)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border w-16 text-center transition-all ${
+                      isSelected
+                        ? 'bg-[#FF2800] text-white border-[#FF2800]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF2800]'
+                    }`}
+                  >
+                    {size}"
+                  </button>
+
+                  {/* Dynamic Stock Input for this specific waist size */}
+                  {isSelected && (
+                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                      <Label className="text-xs text-gray-500 whitespace-nowrap">Stock:</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        className="w-24 h-8 text-sm"
+                        value={newProduct.variantStock?.[size] ?? ''}
+                        onChange={(e) => updateVariantStock(size, parseInt(e.target.value) || 0)}
+                        placeholder="0"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -192,14 +242,31 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
       {/* Model Car Options */}
       {shouldShowModelCarOptions && (
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label className="text-sm font-semibold">Scale</Label>
-            <Select value={newProduct.modelCarScale} onValueChange={(v) => setNewProduct(prev => ({ ...prev, modelCarScale: v }))}>
-              <SelectTrigger><SelectValue placeholder="Select scale" /></SelectTrigger>
-              <SelectContent>
-                {MODEL_CAR_SCALES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col gap-3">
+              <Select value={newProduct.modelCarScale} onValueChange={(v) => setNewProduct(prev => ({ ...prev, modelCarScale: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select scale" /></SelectTrigger>
+                <SelectContent>
+                  {MODEL_CAR_SCALES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              {/* Dynamic Stock Input for the selected scale */}
+              {newProduct.modelCarScale && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                  <Label className="text-xs text-gray-500 whitespace-nowrap">Stock for {newProduct.modelCarScale}:</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    className="w-24 h-9 text-sm"
+                    value={newProduct.variantStock?.[newProduct.modelCarScale] ?? ''}
+                    onChange={(e) => updateVariantStock(newProduct.modelCarScale!, parseInt(e.target.value) || 0)}
+                    placeholder="0"
+                  />
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Material</Label>
@@ -222,7 +289,7 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
           <Input type="number" placeholder="e.g. 9000" value={newProduct.price} onChange={(e) => setNewProduct(prev => ({ ...prev, price: e.target.value }))} />
         </div>
         <div className="space-y-2">
-          <Label className="text-sm font-semibold">Stock *</Label>
+          <Label className="text-sm font-semibold">General Stock (Fallback) *</Label>
           <Input type="number" placeholder="e.g. 50" value={newProduct.stockQuantity} onChange={(e) => setNewProduct(prev => ({ ...prev, stockQuantity: e.target.value }))} />
         </div>
       </div>
@@ -334,10 +401,8 @@ export function AdminDashboard() {
     e.preventDefault();
     setLoginLoading(true);
     setLoginError('');
-
     try {
       const { session, error } = await signIn(loginEmail, loginPassword);
-
       if (error) {
         setLoginError(error);
       } else if (session) {
@@ -374,7 +439,6 @@ export function AdminDashboard() {
 
   const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
   const totalStock = products.reduce((sum, p) => sum + (p.stockQuantity || 0), 0);
-
   const salesData = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - i));
@@ -424,6 +488,7 @@ export function AdminDashboard() {
       waistSizes: newProduct.waistSizes.length > 0 ? newProduct.waistSizes : undefined,
       modelCarScale: newProduct.modelCarScale || undefined,
       material: newProduct.material || undefined,
+      variantStock: Object.keys(newProduct.variantStock).length > 0 ? newProduct.variantStock : undefined,
     };
     const result = await createProduct(productData);
     if (result) {
@@ -454,6 +519,7 @@ export function AdminDashboard() {
       waistSizes: newProduct.waistSizes.length > 0 ? newProduct.waistSizes : undefined,
       modelCarScale: newProduct.modelCarScale || undefined,
       material: newProduct.material || undefined,
+      variantStock: Object.keys(newProduct.variantStock).length > 0 ? newProduct.variantStock : undefined,
     };
     const result = await updateProduct(selectedProduct.id, productData);
     if (result) {
@@ -497,6 +563,7 @@ export function AdminDashboard() {
       waistSizes: product.waistSizes || [],
       modelCarScale: product.modelCarScale || '',
       material: product.material || '',
+      variantStock: product.variantStock || {},
     });
     setImagePreview(product.image);
     setEditProductDialogOpen(true);
@@ -510,7 +577,7 @@ export function AdminDashboard() {
   const handleExportProducts = () => {
     const csv = [
       ['Name', 'Price', 'Category', 'Gender', 'Team', 'Stock', 'Image URL'].join(','),
-      ...products.map(p => [`\"${p.name}\"`, p.price, p.category, p.gender, p.team || '', p.stockQuantity || 0, p.image].join(','))
+      ...products.map(p => [`"${p.name}"`, p.price, p.category, p.gender, p.team || '', p.stockQuantity || 0, p.image].join(','))
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -529,11 +596,9 @@ export function AdminDashboard() {
     reader.onload = async (event) => {
       const csvText = event.target?.result as string;
       const lines = csvText.split('\n');
-      const headers = lines[0].split(',');
       
       let successCount = 0;
       let errorCount = 0;
-
       for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
         const values = lines[i].split(',');
@@ -650,7 +715,6 @@ export function AdminDashboard() {
                   )}
                 </Button>
               </form>
-              
               <div className="mt-4 text-center text-sm text-gray-500">
                 <p>Designed by::</p>
                 <p className="font-mono text-xs mt-1">Tuan Sharik Ismet AKA Mubtakar</p>

@@ -16,6 +16,7 @@ export interface Product {
   driver?: string;
   description?: string;
   stockQuantity?: number;
+  variantStock?: Record<string, number>; // <-- ADD THIS LINE
   // Product variants
   sizes?: string[];
   waistSizes?: string[];

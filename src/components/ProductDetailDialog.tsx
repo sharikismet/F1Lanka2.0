@@ -7,11 +7,11 @@ import {
 } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { ShoppingCart, Package, DollarSign, Calendar } from 'lucide-react';
+import { ShoppingCart, Package } from 'lucide-react';
 import type { Product } from '../lib/api';
 import { useCart } from '../lib/CartContext';
 import { toast } from 'sonner@2.0.3';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ProductDetailDialogProps {
   product: Product | null;
@@ -29,10 +29,27 @@ export function ProductDetailDialog({
   const [selectedWaistSize, setSelectedWaistSize] = useState<string>('');
   const [selectedScale, setSelectedScale] = useState<string>('');
 
+  // Reset selections when dialog opens with a new product
+  useEffect(() => {
+    if (open) {
+      setSelectedSize('');
+      setSelectedWaistSize('');
+      setSelectedScale('');
+    }
+  }, [open, product]);
+
   if (!product) return null;
 
-  const isOutOfStock = product.stockQuantity === 0;
-  const isLowStock = product.stockQuantity !== undefined && product.stockQuantity > 0 && product.stockQuantity < 10;
+  // Find the currently active variant
+  const activeVariantKey = selectedSize || selectedWaistSize || selectedScale;
+
+  // Check variant stock if it exists, otherwise fall back to general stock
+  const currentStock = (product.variantStock && activeVariantKey) 
+    ? product.variantStock[activeVariantKey] 
+    : product.stockQuantity;
+
+  const isOutOfStock = currentStock === 0;
+  const isLowStock = currentStock !== undefined && currentStock > 0 && currentStock < 10;
 
   // Check if product requires variant selection
   const hasClothingSizes = product.sizes && product.sizes.length > 0;
@@ -57,6 +74,7 @@ export function ProductDetailDialog({
       waistSize: selectedWaistSize,
       scale: hasModelCarScale ? product.modelCarScale : undefined,
     });
+    
     toast.success('Added to cart!', {
       description: `${product.name}${selectedSize ? ` (Size: ${selectedSize})` : ''}${selectedWaistSize ? ` (Waist: ${selectedWaistSize}")` : ''} has been added to your cart.`,
     });
@@ -87,9 +105,9 @@ export function ProductDetailDialog({
                 Out of Stock
               </Badge>
             )}
-            {isLowStock && (
+            {isLowStock && !isOutOfStock && (
               <Badge className="absolute top-4 right-4 bg-orange-600 text-white text-sm">
-                Only {product.stockQuantity} left!
+                Only {currentStock} left!
               </Badge>
             )}
             
@@ -119,12 +137,6 @@ export function ProductDetailDialog({
                   </span>
                 )}
               </div>
-              {product.originalPrice && (
-                <p className="text-sm text-green-600 font-medium">
-                  Save LKR {(product.originalPrice - product.price).toFixed(2)} (
-                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
-                </p>
-              )}
             </div>
 
             {/* Variant Selection - Clothing Sizes */}
@@ -132,19 +144,27 @@ export function ProductDetailDialog({
               <div className="mb-6">
                 <h3 className="font-semibold mb-3">Select Size</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.sizes!.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
-                        selectedSize === size
-                          ? 'border-[#FF2800] bg-[#FF2800] text-white'
-                          : 'border-gray-300 hover:border-[#FF2800] text-gray-700'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                  {product.sizes!.map((size) => {
+                    const sizeStock = product.variantStock ? product.variantStock[size] : undefined;
+                    const isSizeOut = sizeStock === 0;
+
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        disabled={isSizeOut}
+                        className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                          selectedSize === size
+                            ? 'border-[#FF2800] bg-[#FF2800] text-white'
+                            : isSizeOut
+                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                            : 'border-gray-300 hover:border-[#FF2800] text-gray-700'
+                        }`}
+                      >
+                        {size} {isSizeOut && '(Out)'}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -154,19 +174,27 @@ export function ProductDetailDialog({
               <div className="mb-6">
                 <h3 className="font-semibold mb-3">Select Waist Size</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.waistSizes!.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedWaistSize(size)}
-                      className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
-                        selectedWaistSize === size
-                          ? 'border-[#FF2800] bg-[#FF2800] text-white'
-                          : 'border-gray-300 hover:border-[#FF2800] text-gray-700'
-                      }`}
-                    >
-                      {size}"
-                    </button>
-                  ))}
+                  {product.waistSizes!.map((size) => {
+                    const sizeStock = product.variantStock ? product.variantStock[size] : undefined;
+                    const isSizeOut = sizeStock === 0;
+
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedWaistSize(size)}
+                        disabled={isSizeOut}
+                        className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                          selectedWaistSize === size
+                            ? 'border-[#FF2800] bg-[#FF2800] text-white'
+                            : isSizeOut
+                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                            : 'border-gray-300 hover:border-[#FF2800] text-gray-700'
+                        }`}
+                      >
+                        {size}" {isSizeOut && '(Out)'}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -194,14 +222,9 @@ export function ProductDetailDialog({
                 <p className={`font-medium ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
                   {isOutOfStock ? 'Out of Stock' : 'In Stock'}
                 </p>
-                {!isOutOfStock && product.stockQuantity !== undefined && (
+                {!isOutOfStock && currentStock !== undefined && (
                   <p className="text-sm text-gray-600">
-                    {isLowStock ? `Hurry! Only ${product.stockQuantity} items remaining` : `${product.stockQuantity} available`}
-                  </p>
-                )}
-                {isOutOfStock && (
-                  <p className="text-sm text-gray-600">
-                    This item is currently unavailable. Contact us for restock information.
+                    {isLowStock ? `Hurry! Only ${currentStock} items remaining` : `${currentStock} available`}
                   </p>
                 )}
               </div>
@@ -215,28 +238,10 @@ export function ProductDetailDialog({
               </p>
             </div>
 
-            {/* Product Info */}
-            <div className="mb-6 space-y-2">
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-gray-600">Category:</span>
-                <span className="font-medium">{product.category}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="text-gray-600">Gender:</span>
-                <span className="font-medium capitalize">{product.gender}</span>
-              </div>
-              {product.team && (
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Team:</span>
-                  <span className="font-medium">{product.team}</span>
-                </div>
-              )}
-            </div>
-
             {/* Action Buttons */}
             <div className="mt-auto space-y-3">
               <Button
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                className="w-full bg-[#FF2800] hover:bg-[#CC2000] text-white"
                 size="lg"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
@@ -244,21 +249,6 @@ export function ProductDetailDialog({
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
               </Button>
-            </div>
-
-            {/* Additional Info */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600">
-                🛒 Add items to your cart and checkout when ready
-              </p>
-              <p className="text-xs text-gray-600 mt-1">
-                🚚 Free shipping on orders over LKR 5,000
-              </p>
-              {isOutOfStock && (
-                <p className="text-xs text-gray-600 mt-1">
-                  📧 Want to be notified when back in stock? Message us!
-                </p>
-              )}
             </div>
           </div>
         </div>

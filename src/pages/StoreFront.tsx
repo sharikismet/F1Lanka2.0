@@ -132,8 +132,8 @@ export function StoreFront() {
 
       {/* Next Race Countdown - Full Width Above Footer */}
       <NextRaceCountdown 
-        raceName="Miami Grand Prix" 
-        targetDate="2026-05-03T15:30:00Z" 
+        raceName="Canadian Grand Prix" 
+        targetDate="2026-05-24T16:00:00-04:00" 
       />
 
       <ProductDetailDialog product={selectedProduct} open={dialogOpen} onOpenChange={setDialogOpen} />

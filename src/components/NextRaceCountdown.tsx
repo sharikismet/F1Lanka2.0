@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 
 interface NextRaceCountdownProps {
-  targetDate: string;
-  raceName: string;
+  targetDate?: string;
+  raceName?: string;
   bgImageUrl?: string;
 }
 
 export function NextRaceCountdown({ 
-  targetDate, 
-  raceName,
+  targetDate = "2026-05-24T16:00:00-04:00", // Scheduled for 4:00 PM EDT
+  raceName = "Canadian Grand Prix",
   // Default to a cool F1 starting grid or track background
   bgImageUrl = "https://images.unsplash.com/photo-1534489354145-31ba006bdf25?q=80&w=2070&auto=format&fit=crop"
 }: NextRaceCountdownProps) {

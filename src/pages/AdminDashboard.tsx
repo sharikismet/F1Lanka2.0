@@ -29,7 +29,8 @@ const defaultProduct = {
   name: '', price: '', originalPrice: '', image: '', category: '', gender: 'all',
   team: '', driver: '', description: '', stockQuantity: '', isClearance: false,
   sizes: [] as string[], waistSizes: [] as string[], modelCarScale: '', material: '',
-  variantStock: {} as Record<string, number>, // Added variant tracking
+  variantStock: {} as Record<string, number>,
+  images: [] as string[], // Additional gallery images (primary `image` is still the cover)
 };
 
 interface ProductFormContentProps {
@@ -40,9 +41,11 @@ interface ProductFormContentProps {
   imagePreview: string;
   setImagePreview: React.Dispatch<React.SetStateAction<string>>;
   handleImageUpload: (file: File) => void;
+  handleMultiImageUpload: (files: FileList) => void;
   toggleSize: (size: string) => void;
   toggleWaistSize: (size: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
+  multiFileInputRef: React.RefObject<HTMLInputElement>;
 }
 
 const ProductFormContent: React.FC<ProductFormContentProps> = ({
@@ -53,9 +56,11 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
   imagePreview,
   setImagePreview,
   handleImageUpload,
+  handleMultiImageUpload,
   toggleSize,
   toggleWaistSize,
   fileInputRef,
+  multiFileInputRef,
 }) => {
   const shouldShowSizes = ['T-Shirts', 'Hoodies'].includes(newProduct.category);
   const shouldShowWaistSizes = newProduct.category === 'Pants';
@@ -116,6 +121,54 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
             <p className="text-xs text-gray-400">Click the box to upload or paste a URL above</p>
           </div>
         </div>
+      </div>
+
+      {/* Additional Images (multi-upload gallery) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-semibold">Additional Images (Gallery)</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => multiFileInputRef.current?.click()}
+            disabled={uploading}
+            className="text-xs"
+          >
+            {uploading ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5 mr-1" />}
+            Add Images
+          </Button>
+        </div>
+        <input
+          ref={multiFileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) handleMultiImageUpload(e.target.files);
+            e.target.value = '';
+          }}
+        />
+        {newProduct.images && newProduct.images.length > 0 ? (
+          <div className="grid grid-cols-5 gap-2">
+            {newProduct.images.map((url, idx) => (
+              <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-white/10 bg-[#16161c]">
+                <img src={url} alt={`extra ${idx + 1}`} className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setNewProduct(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))}
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                  aria-label="Remove image"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500">Upload multiple gallery images shown on the product detail view.</p>
+        )}
       </div>
 
       <Separator />
@@ -363,6 +416,7 @@ export function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const multiFileInputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   // Auth state
@@ -467,6 +521,32 @@ export function AdminDashboard() {
     setUploading(false);
   };
 
+  const handleMultiImageUpload = async (files: FileList) => {
+    setUploading(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadProductImage(file);
+        if (url) uploaded.push(url);
+      }
+      if (uploaded.length > 0) {
+        setNewProduct(prev => ({
+          ...prev,
+          images: [...(prev.images || []), ...uploaded],
+          // If no cover image yet, promote the first uploaded image
+          image: prev.image || uploaded[0],
+        }));
+        if (!imagePreview) setImagePreview(uploaded[0]);
+        toast.success(`${uploaded.length} image(s) uploaded`);
+      } else {
+        toast.error('No images uploaded. Make sure you are logged in.');
+      }
+    } catch {
+      toast.error('Multi-image upload failed');
+    }
+    setUploading(false);
+  };
+
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.category) {
       toast.error('Please fill in all required fields');
@@ -489,6 +569,7 @@ export function AdminDashboard() {
       modelCarScale: newProduct.modelCarScale || undefined,
       material: newProduct.material || undefined,
       variantStock: Object.keys(newProduct.variantStock).length > 0 ? newProduct.variantStock : undefined,
+      images: newProduct.images && newProduct.images.length > 0 ? newProduct.images : undefined,
     };
     const result = await createProduct(productData);
     if (result) {
@@ -520,6 +601,7 @@ export function AdminDashboard() {
       modelCarScale: newProduct.modelCarScale || undefined,
       material: newProduct.material || undefined,
       variantStock: Object.keys(newProduct.variantStock).length > 0 ? newProduct.variantStock : undefined,
+      images: newProduct.images && newProduct.images.length > 0 ? newProduct.images : undefined,
     };
     const result = await updateProduct(selectedProduct.id, productData);
     if (result) {
@@ -564,6 +646,7 @@ export function AdminDashboard() {
       modelCarScale: product.modelCarScale || '',
       material: product.material || '',
       variantStock: product.variantStock || {},
+      images: (product as any).images || [],
     });
     setImagePreview(product.image);
     setEditProductDialogOpen(true);
@@ -653,7 +736,7 @@ export function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0a0a0c] bg-carbon text-white">
       {/* Show login screen if not authenticated */}
       {checkingSession ? (
         <div className="min-h-screen flex items-center justify-center">
@@ -725,7 +808,7 @@ export function AdminDashboard() {
       ) : (
         <>
       {/* Header */}
-      <header className="bg-[#1a1a1a] text-white sticky top-0 z-50">
+      <header className="bg-[#0d0d12] text-white sticky top-0 z-50 border-b border-white/5 backdrop-blur-md">
         <div className="container mx-auto px-4 py-0">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-6">
@@ -786,20 +869,20 @@ export function AdminDashboard() {
                 { label: 'Orders', value: orders.length, sub: 'Total orders', icon: <ShoppingCart className="w-5 h-5" />, color: 'text-[#FF2800] bg-red-50' },
                 { label: 'Total Stock', value: totalStock, sub: 'Items in stock', icon: <TrendingUp className="w-5 h-5" />, color: 'text-orange-600 bg-orange-50' },
               ].map(stat => (
-                <Card key={stat.label} className="border-0 shadow-sm">
+                <Card key={stat.label} className="border border-white/5 bg-[#13131a] shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_8px_30px_rgba(0,0,0,0.4)]">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-gray-500 font-medium">{stat.label}</span>
+                      <span className="text-[11px] tracking-[0.25em] uppercase text-white/50 font-racing">{stat.label}</span>
                       <div className={`p-2 rounded-lg ${stat.color}`}>{stat.icon}</div>
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                    <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
+                    <div className="text-2xl font-display font-bold text-white">{stat.value}</div>
+                    <p className="text-xs text-white/40 mt-1">{stat.sub}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-white/5 bg-[#13131a]">
               <CardHeader>
                 <CardTitle className="text-lg">Sales Analytics</CardTitle>
                 <CardDescription>Revenue and orders over the last 7 days</CardDescription>
@@ -844,8 +927,8 @@ export function AdminDashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Product Inventory</h2>
-                <p className="text-sm text-gray-500">{products.length} products total</p>
+                <h2 className="font-display text-2xl font-bold text-white uppercase tracking-wide">Product Inventory</h2>
+                <p className="text-xs text-white/50 font-racing tracking-widest uppercase">{products.length} products total</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleExportProducts}>
@@ -867,7 +950,7 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-white/5 bg-[#13131a]">
               <CardContent className="p-4">
                 <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -882,7 +965,7 @@ export function AdminDashboard() {
                 <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gray-50">
+                      <TableRow className="bg-[#0d0d12] hover:bg-[#0d0d12] border-white/5">
                         <TableHead>Product</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Team</TableHead>
@@ -898,7 +981,7 @@ export function AdminDashboard() {
                       ) : filteredProducts.length === 0 ? (
                         <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">No products found</TableCell></TableRow>
                       ) : filteredProducts.map(product => (
-                        <TableRow key={product.id} className="hover:bg-gray-50">
+                        <TableRow key={product.id} className="hover:bg-white/5 border-white/5">
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover border" />
@@ -950,16 +1033,16 @@ export function AdminDashboard() {
         {activeView === 'orders' && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Order Management</h2>
-              <p className="text-sm text-gray-500">{orders.length} orders total</p>
+              <h2 className="font-display text-2xl font-bold text-white uppercase tracking-wide">Order Management</h2>
+              <p className="text-xs text-white/50 font-racing tracking-widest uppercase">{orders.length} orders total</p>
             </div>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-white/5 bg-[#13131a]">
               <CardContent className="p-4">
                 <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gray-50">
+                      <TableRow className="bg-[#0d0d12] hover:bg-[#0d0d12] border-white/5">
                         <TableHead>Order ID</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Date</TableHead>
@@ -972,7 +1055,7 @@ export function AdminDashboard() {
                       {orders.length === 0 ? (
                         <TableRow><TableCell colSpan={6} className="text-center py-8 text-gray-400">No orders yet</TableCell></TableRow>
                       ) : orders.map(order => (
-                        <TableRow key={order.id} className="hover:bg-gray-50">
+                        <TableRow key={order.id} className="hover:bg-white/5 border-white/5">
                           <TableCell className="font-mono text-xs">{order.id.slice(0, 8)}</TableCell>
                           
                           {/* Expanded Customer Info with Address */}
@@ -1040,9 +1123,11 @@ export function AdminDashboard() {
             imagePreview={imagePreview}
             setImagePreview={setImagePreview}
             handleImageUpload={handleImageUpload}
+            handleMultiImageUpload={handleMultiImageUpload}
             toggleSize={toggleSize}
             toggleWaistSize={toggleWaistSize}
             fileInputRef={fileInputRef}
+            multiFileInputRef={multiFileInputRef}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddProductDialogOpen(false)}>Cancel</Button>
@@ -1066,9 +1151,11 @@ export function AdminDashboard() {
             imagePreview={imagePreview}
             setImagePreview={setImagePreview}
             handleImageUpload={handleImageUpload}
+            handleMultiImageUpload={handleMultiImageUpload}
             toggleSize={toggleSize}
             toggleWaistSize={toggleWaistSize}
             fileInputRef={fileInputRef}
+            multiFileInputRef={multiFileInputRef}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditProductDialogOpen(false)}>Cancel</Button>

@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --font-racing: 'Orbitron', 'Impact', sans-serif;
+  --font-display: 'Rajdhani', 'Arial Narrow', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #0a0a0c;
+  color: #e8e8ec;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.font-racing {
+  font-family: var(--font-racing);
+  letter-spacing: 0.08em;
+}
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Carbon-fiber subtle backdrop */
+.bg-carbon {
+  background-color: #0a0a0c;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 6px);
+}
+
+/* Racing red glow pulse */
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,40,0,0.0), 0 0 24px rgba(255,40,0,0.35); }
+  50%      { box-shadow: 0 0 0 4px rgba(255,40,0,0.18), 0 0 48px rgba(255,40,0,0.7); }
+}
+.neon-pulse { animation: neonPulse 2.2s ease-in-out infinite; }
+
+/* Marquee/auto-scroll for team carousel */
+@keyframes marqueeX {
+  from { transform: translate3d(0,0,0); }
+  to   { transform: translate3d(-50%,0,0); }
+}
+.marquee-track { animation: marqueeX 28s linear infinite; }
+.marquee-track:hover { animation-play-state: paused; }
+
+/* Speed-line sweep for hover */
+@keyframes speedSweep {
+  0% { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(220%) skewX(-20deg); }
+}
+.speed-sweep::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: translateX(-120%) skewX(-20deg);
+  pointer-events: none;
+}
+.speed-sweep:hover::after { animation: speedSweep 0.9s ease-out; }
+
+/* Scanline overlay (gaming/HUD) */
+.scanlines {
+  position: relative;
+}
+.scanlines::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Rotating conic ring */
+@keyframes spinRing { to { transform: rotate(360deg); } }
+.spin-ring { animation: spinRing 6s linear infinite; }
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

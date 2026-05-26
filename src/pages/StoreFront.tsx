@@ -66,7 +66,7 @@ export function StoreFront() {
   const featuredProducts = products.slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0c] bg-carbon text-white flex flex-col">
       <MegaMenu
         onSearch={(q) => { if (q) navigate(`/shop?q=${encodeURIComponent(q)}`); }}
         onCartClick={() => setCartDrawerOpen(true)}
@@ -109,7 +109,7 @@ export function StoreFront() {
         {!loading && featuredProducts.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">Featured Products</h2>
+              <h2 className="font-display text-3xl lg:text-4xl font-bold text-white uppercase tracking-wide">Featured Products</h2>
               <Button variant="outline" onClick={() => navigate('/shop')} className="text-[#FF2800] border-[#FF2800] hover:bg-[#FF2800] hover:text-white">
                 View All
               </Button>
@@ -132,8 +132,8 @@ export function StoreFront() {
 
       {/* Next Race Countdown - Full Width Above Footer */}
       <NextRaceCountdown 
-        raceName="Canadian Grand Prix" 
-        targetDate="2026-05-24T16:00:00-04:00" 
+        raceName="Miami Grand Prix" 
+        targetDate="2026-05-03T15:30:00Z" 
       />
 
       <ProductDetailDialog product={selectedProduct} open={dialogOpen} onOpenChange={setDialogOpen} />

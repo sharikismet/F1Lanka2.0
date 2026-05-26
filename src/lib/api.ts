@@ -9,6 +9,7 @@ export interface Product {
   price: number;
   originalPrice?: number;
   image: string;
+  images?: string[];
   category: string;
   gender: string;
   isClearance?: boolean;
@@ -246,16 +247,35 @@ export async function initSampleData(): Promise<boolean> {
 // ORDER MANAGEMENT
 // ============================================
 
+// Slugify a string for use inside IDs (preserves human readability)
+function slugifyName(s: string): string {
+  return (s || 'unknown')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40) || 'unknown';
+}
+
 // Create a new order
 export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt'>): Promise<Order | null> {
   try {
+    // Build a friendly order ID that embeds the customer's name,
+    // and rewrite each item's productId to embed the product name.
+    const ts = Date.now().toString(36);
+    const friendlyOrderId = `${slugifyName(orderData.customerName)}-${ts}`;
+    const itemsWithNamedIds = orderData.items.map((it: any) => ({
+      ...it,
+      productId: `${slugifyName(it.productName)}-${it.productId}`,
+    }));
+    const payload = { ...orderData, id: friendlyOrderId, items: itemsWithNamedIds };
+
     const response = await fetch(`${API_URL}/orders`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${publicAnonKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(orderData),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

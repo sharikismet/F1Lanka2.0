@@ -30,45 +30,46 @@ export function ProductCard({
   const isLowStock = stockQuantity !== undefined && stockQuantity > 0 && stockQuantity < 10;
 
   return (
-    <div className={`group cursor-pointer ${isOutOfStock ? 'opacity-75' : ''}`} onClick={onClick}>
-      <div className="relative aspect-square mb-3 sm:mb-4 bg-gray-100 rounded-lg overflow-hidden">
+    <div 
+      className={`group cursor-pointer bg-[#0f0f13] border border-white/5 rounded-none p-3 hover:border-[#cba153]/50 transition-all duration-500 ${isOutOfStock ? 'opacity-50 grayscale' : ''}`} 
+      onClick={onClick}
+    >
+      <div className="relative aspect-square mb-4 bg-[#0a0a0c] overflow-hidden">
         <img
           src={image}
           alt={name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-in-out"
         />
         
-        {/* Stock Status Badges */}
+        {/* Sleek Minimal Badges */}
         {isOutOfStock && (
-          <Badge className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-gray-800 text-white text-xs">
-            Out of Stock
+          <Badge className="absolute top-2 right-2 bg-black/80 backdrop-blur-md text-white border border-white/10 text-[10px] font-mono tracking-widest uppercase rounded-none">
+            Sold Out
           </Badge>
         )}
         {isLowStock && !isClearance && (
-          <Badge className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-orange-600 text-white text-xs">
-            Only {stockQuantity} left!
+          <Badge className="absolute top-2 right-2 bg-[#cba153]/20 backdrop-blur-md text-[#cba153] border border-[#cba153]/30 text-[10px] font-mono tracking-widest uppercase rounded-none">
+            {stockQuantity} Left
           </Badge>
         )}
         
-        {/* Clearance Badge */}
         {isClearance && !isOutOfStock && (
-          <Badge className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-red-600 text-xs">
-            Clearance
+          <Badge className="absolute top-2 right-2 bg-red-900/40 backdrop-blur-md text-red-400 border border-red-900/50 text-[10px] font-mono tracking-widest uppercase rounded-none">
+            Archive
           </Badge>
         )}
         
-        {/* Team Badge */}
         {team && (
-          <Badge className="absolute top-1 sm:top-2 left-1 sm:left-2 bg-black text-xs">
+          <Badge className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-gray-300 border border-white/10 text-[9px] font-sans tracking-[0.2em] uppercase rounded-none">
             {team}
           </Badge>
         )}
         
-        {/* Cart Button - Hidden on Mobile */}
+        {/* Cart Button */}
         {!isOutOfStock && (
           <Button
             size="icon"
-            className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex"
+            className="absolute bottom-3 right-3 bg-white hover:bg-[#cba153] text-black border-none rounded-full opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hidden sm:flex shadow-[0_0_20px_rgba(0,0,0,0.5)]"
             onClick={(e) => {
               e.stopPropagation();
               onClick?.();
@@ -79,25 +80,18 @@ export function ProductCard({
         )}
       </div>
       
-      <div>
-        <p className="text-xs sm:text-sm text-gray-600 mb-1">{category}</p>
-        <h3 className="text-sm sm:text-base font-medium mb-1 sm:mb-2 line-clamp-2">{name}</h3>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <span className="text-sm sm:text-base font-bold">LKR {price.toFixed(2)}</span>
+      <div className="flex flex-col h-full">
+        <p className="text-[10px] text-gray-500 font-mono tracking-widest uppercase mb-1.5">{category}</p>
+        <h3 className="text-sm font-medium text-gray-200 mb-3 line-clamp-2 leading-snug group-hover:text-white transition-colors">{name}</h3>
+        
+        <div className="flex items-center gap-2 mt-auto pt-2 border-t border-white/5">
+          <span className="text-sm font-semibold text-[#cba153]">LKR {price.toFixed(2)}</span>
           {originalPrice && (
-            <span className="text-xs sm:text-sm text-gray-500 line-through">
+            <span className="text-xs text-gray-600 line-through">
               LKR {originalPrice.toFixed(2)}
             </span>
           )}
         </div>
-        
-        {/* Stock Status Text */}
-        {isOutOfStock && (
-          <p className="text-xs sm:text-sm text-red-600 mt-1">Currently unavailable</p>
-        )}
-        {isLowStock && (
-          <p className="text-xs sm:text-sm text-orange-600 mt-1">Low stock - order soon!</p>
-        )}
       </div>
     </div>
   );

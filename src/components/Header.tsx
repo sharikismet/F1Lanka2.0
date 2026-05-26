@@ -1,4 +1,4 @@
-import { Search, ShoppingCart, Menu } from 'lucide-react';
+import { Search, ShoppingCart } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -37,49 +37,54 @@ export function Header({
   };
 
   return (
-    <header className="border-b sticky top-0 bg-white z-50 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white border-b-[4px] border-black">
+      
+      {/* Brutalist Promo Banner */}
+      <div className="bg-black text-white text-center py-2 text-xs md:text-sm font-black tracking-[0.2em] uppercase overflow-hidden whitespace-nowrap">
+        <div className="inline-block animate-[marquee_20s_linear_infinite]">
+           🔥 LIMITED DROP ALERT // UP TO 50% OFF SELECTED ITEMS // FREE SHIPPING OVER LKR 15,000 🔥 
+        </div>
+      </div>
+
       <div className="container mx-auto px-4">
         {/* Top Bar */}
         <div className="flex items-center justify-between py-4 gap-4">
-          {/* Logo */}
+          
+          {/* Logo Area */}
           <div 
-            className="flex items-center gap-2 cursor-pointer flex-shrink-0" 
+            className="flex flex-col cursor-pointer flex-shrink-0 group" 
             onClick={onLogoClick}
           >
             <img 
               src={logo} 
               alt="F1 Lanka" 
-              className="h-12 w-auto object-contain"
+              className="h-10 md:h-14 w-auto object-contain group-hover:scale-105 transition-transform"
             />
-            <div className="hidden sm:block">
-              <span className="text-sm text-gray-500 hidden md:inline">Formula 1 Experience in Sri Lanka</span>
-            </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-xl mx-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          {/* Search Bar - Edgy Style */}
+          <div className="flex-1 max-w-2xl mx-4 hidden md:block">
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-black w-5 h-5 z-10" />
               <Input
                 type="text"
-                placeholder="Search products..."
-                className="pl-10 w-full"
+                placeholder="SEARCH ARCHIVE..."
+                className="pl-12 w-full h-12 bg-gray-100 border-2 border-black rounded-none font-bold uppercase tracking-widest focus:ring-0 focus:border-red-600 transition-colors"
                 onChange={(e) => onSearch(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Cart */}
+          {/* Cart Button */}
           <div className="flex items-center gap-4 flex-shrink-0">
             <Button 
-              variant="ghost" 
-              size="icon"
-              className="relative"
+              variant="outline" 
+              className="relative h-12 w-12 border-2 border-black rounded-none hover:bg-black hover:text-white transition-colors"
               onClick={onCartClick}
             >
               <ShoppingCart className="w-6 h-6" />
               {totalItems > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-600 text-xs">
+                <Badge className="absolute -top-3 -right-3 h-7 w-7 flex items-center justify-center p-0 bg-red-600 text-white border-2 border-black rounded-none text-xs font-black">
                   {totalItems}
                 </Badge>
               )}
@@ -87,34 +92,25 @@ export function Header({
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="border-t overflow-x-auto">
-          <ul className="flex items-center justify-between py-3 text-sm whitespace-nowrap gap-4 min-w-max">
+        {/* Navigation - Bold Uppercase */}
+        <nav className="border-t-2 border-black overflow-x-auto no-scrollbar">
+          <ul className="flex items-center justify-start md:justify-center py-4 text-sm whitespace-nowrap gap-8 min-w-max">
             <li>
               <a 
                 href="#" 
-                className="hover:text-red-600 transition-colors font-medium"
+                className="font-black text-black uppercase tracking-[0.15em] hover:text-red-600 hover:line-through transition-all"
                 onClick={(e) => { 
                   e.preventDefault(); 
                   onTeamSelectorClick();
                 }}
               >
-                Shop By Team
+                Teams
               </a>
             </li>
             <li>
               <a 
                 href="#" 
-                className="hover:text-red-600 transition-colors"
-                onClick={(e) => { e.preventDefault(); }}
-              >
-                Shop By Driver
-              </a>
-            </li>
-            <li>
-              <a 
-                href="#" 
-                className="hover:text-red-600 transition-colors font-medium"
+                className="font-black text-black uppercase tracking-[0.15em] hover:text-red-600 hover:line-through transition-all"
                 onClick={(e) => handleGenderClick(e, 'men')}
               >
                 Men
@@ -123,7 +119,7 @@ export function Header({
             <li>
               <a 
                 href="#" 
-                className="hover:text-red-600 transition-colors font-medium"
+                className="font-black text-black uppercase tracking-[0.15em] hover:text-red-600 hover:line-through transition-all"
                 onClick={(e) => handleGenderClick(e, 'women')}
               >
                 Women
@@ -132,16 +128,7 @@ export function Header({
             <li>
               <a 
                 href="#" 
-                className="hover:text-red-600 transition-colors font-medium"
-                onClick={(e) => handleGenderClick(e, 'kids')}
-              >
-                Kids
-              </a>
-            </li>
-            <li>
-              <a 
-                href="#" 
-                className="hover:text-red-600 transition-colors"
+                className="font-black text-black uppercase tracking-[0.15em] hover:text-red-600 hover:line-through transition-all"
                 onClick={(e) => handleCategoryClick(e, 'Caps & Hats')}
               >
                 Headwear
@@ -150,28 +137,14 @@ export function Header({
             <li>
               <a 
                 href="#" 
-                className="hover:text-red-600 transition-colors"
+                className="font-black text-black uppercase tracking-[0.15em] hover:text-red-600 hover:line-through transition-all"
                 onClick={(e) => handleCategoryClick(e, 'Accessories')}
               >
-                Gifts & Accessories
-              </a>
-            </li>
-            <li>
-              <a 
-                href="#" 
-                className="hover:text-red-600 transition-colors"
-                onClick={(e) => handleCategoryClick(e, 'Model Cars')}
-              >
-                Collectibles
+                Accessories
               </a>
             </li>
           </ul>
         </nav>
-
-        {/* Promo Banner */}
-        <div className="bg-gray-100 text-center py-2 text-sm">
-          UP TO 50% OFF ON SELECTED ITEMS
-        </div>
       </div>
     </header>
   );

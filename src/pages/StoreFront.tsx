@@ -8,9 +8,8 @@ import { FloatingButtons } from '../components/FloatingButtons';
 import { getProducts, initSampleData, testServerConnection } from '../lib/api';
 import type { Product } from '../lib/api';
 import { ProductCard } from '../components/ProductCard';
-import { ProductDetailDialog } from '../components/ProductDetailDialog';
 import { Button } from '../components/ui/button';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { useNavigate } from 'react-router';
@@ -24,8 +23,6 @@ export function StoreFront() {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -41,8 +38,6 @@ export function StoreFront() {
       loadProducts();
     }
   };
-
-  useEffect(() => { loadProducts(); }, []);
 
   const loadProducts = async () => {
     setLoading(true);
@@ -62,7 +57,6 @@ export function StoreFront() {
     }
   };
 
-  // Show a few featured products
   const featuredProducts = products.slice(0, 8);
 
   return (
@@ -75,10 +69,7 @@ export function StoreFront() {
         onTeamSelect={() => {}}
       />
 
-      {/* Hero Banner */}
       <HeroBanner onShopNow={() => navigate('/shop')} />
-
-      {/* Shop By Team Scroll Section */}
       <ShopByTeamScroll onTeamSelect={() => {}} />
 
       <div className="container mx-auto px-4 py-8 flex-1">
@@ -105,12 +96,11 @@ export function StoreFront() {
           </div>
         )}
 
-        {/* Featured Products */}
         {!loading && featuredProducts.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-3xl lg:text-4xl font-bold text-white uppercase tracking-wide">Featured Products</h2>
-              <Button variant="outline" onClick={() => navigate('/shop')} className="text-[#FF2800] border-[#FF2800] hover:bg-[#FF2800] hover:text-white">
+              <Button variant="outline" onClick={() => navigate('/shop')} className="text-[#cba153] border-[#cba153] hover:bg-[#cba153] hover:text-black">
                 View All
               </Button>
             </div>
@@ -119,10 +109,8 @@ export function StoreFront() {
                 <ProductCard
                   key={product.id}
                   {...product}
-                  onClick={() => {
-                    setSelectedProduct(product);
-                    setDialogOpen(true);
-                  }}
+                  // 🚨 Navigate to the new page instead of opening a modal
+                  onClick={() => navigate(`/product/${product.id}`)}
                 />
               ))}
             </div>
@@ -130,13 +118,11 @@ export function StoreFront() {
         )}
       </div>
 
-      {/* Next Race Countdown - Full Width Above Footer */}
       <NextRaceCountdown 
         raceName="Miami Grand Prix" 
         targetDate="2026-05-03T15:30:00Z" 
       />
 
-      <ProductDetailDialog product={selectedProduct} open={dialogOpen} onOpenChange={setDialogOpen} />
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />
       <FloatingButtons />
       <Footer />

@@ -51,21 +51,21 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 bg-background shadow-sm">
       {/* Top Bar */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-border">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 lg:h-20 gap-4">
             <a href="/" className="flex items-center gap-3 flex-shrink-0">
               <img src={logo} alt="F1 Lanka" className="h-10 lg:h-12 w-auto object-contain" />
-              <span className="hidden md:block text-sm text-gray-500 border-l border-gray-300 pl-3">
+              <span className="hidden md:block text-sm text-muted-foreground border-l border-border pl-3">
                 Formula 1 Experience in Sri Lanka
               </span>
             </a>
 
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl mx-4">
               <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Search products..."
@@ -74,14 +74,14 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
                     setSearchQuery(e.target.value);
                     onSearch(e.target.value);
                   }}
-                  className="w-full pl-10 bg-gray-50 border-gray-200 focus:border-[#FF2800] focus:ring-[#FF2800]"
+                  className="w-full pl-10 bg-input-background border-border text-foreground focus:border-[#FF2800] focus:ring-[#FF2800]"
                 />
               </div>
             </form>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={onCartClick} className="relative hover:bg-gray-100">
-                <ShoppingCart className="w-5 h-5 text-gray-700" />
+              <Button variant="ghost" size="icon" onClick={onCartClick} className="relative hover:bg-accent">
+                <ShoppingCart className="w-5 h-5 text-foreground" />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-[#FF2800] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
                     {cartItemCount}
@@ -91,26 +91,26 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
 
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden">
-                    <Menu className="w-6 h-6 text-gray-700" />
+                  <Button variant="ghost" size="icon" className="lg:hidden hover:bg-accent">
+                    <Menu className="w-6 h-6 text-foreground" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-80 p-0">
+                <SheetContent side="right" className="w-80 p-0 bg-popover border-border text-popover-foreground">
                   <div className="flex flex-col h-full">
-                    <div className="flex items-center justify-between p-4 border-b">
+                    <div className="flex items-center justify-between p-4 border-b border-border">
                       <span className="font-bold text-lg">Menu</span>
                       <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
-                        <X className="w-5 h-5" />
+                        <X className="w-5 h-5 text-foreground" />
                       </Button>
                     </div>
-                    <div className="p-4 border-b">
+                    <div className="p-4 border-b border-border">
                       <form onSubmit={handleSearch}>
                         <Input
                           type="text"
                           placeholder="Search products..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full bg-gray-50"
+                          className="w-full bg-input-background border-border text-foreground"
                         />
                       </form>
                     </div>
@@ -126,7 +126,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
                         <div key={section.key}>
                           <button
                             onClick={() => setActiveDropdown(activeDropdown === section.key ? null : section.key)}
-                            className="w-full flex items-center justify-between py-2 font-medium text-gray-900"
+                            className="w-full flex items-center justify-between py-2 font-medium text-foreground"
                           >
                             {section.label}
                             <ChevronDown className={`w-4 h-4 transition-transform ${activeDropdown === section.key ? 'rotate-180' : ''}`} />
@@ -137,7 +137,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
                                 <button
                                   key={item.label}
                                   onClick={item.onClick}
-                                  className="block w-full text-left py-2 text-sm text-gray-600 hover:text-[#FF2800]"
+                                  className="block w-full text-left py-2 text-sm text-muted-foreground hover:text-[#FF2800]"
                                 >
                                   {item.label}
                                 </button>
@@ -156,13 +156,13 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
       </div>
 
       {/* Navigation Bar */}
-      <div className="border-b border-gray-100 bg-white">
+      <div className="border-b border-border bg-background">
         <div className="container mx-auto px-4">
           <nav className="hidden lg:flex items-center justify-between py-0">
             <NavDropdown label="Shop By Team" active={activeDropdown === 'teams'} onEnter={() => setActiveDropdown('teams')} onLeave={() => setActiveDropdown(null)}>
               <div className="grid grid-cols-2 gap-1 p-4 w-72">
                 {F1_TEAMS.map(team => (
-                  <button key={team} onClick={() => navigateToShop({ team })} className="text-left px-3 py-2 text-sm text-gray-700 hover:text-[#FF2800] hover:bg-gray-50 rounded transition-colors">
+                  <button key={team} onClick={() => navigateToShop({ team })} className="text-left px-3 py-2 text-sm text-foreground hover:text-[#FF2800] hover:bg-accent rounded transition-colors">
                     {team}
                   </button>
                 ))}
@@ -172,11 +172,11 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
             {/* Men */}
             <NavDropdown label="Men" active={activeDropdown === 'men'} onEnter={() => setActiveDropdown('men')} onLeave={() => setActiveDropdown(null)}>
               <div className="p-4 w-48 space-y-1">
-                <button onClick={() => navigateToShop({ gender: 'men' })} className="w-full text-left px-3 py-2 text-sm font-medium text-[#FF2800] hover:bg-gray-50 rounded">
+                <button onClick={() => navigateToShop({ gender: 'men' })} className="w-full text-left px-3 py-2 text-sm font-medium text-[#FF2800] hover:bg-accent rounded">
                   View All Men's
                 </button>
                 {CLOTHING_CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => navigateToShop({ category: cat, gender: 'men' })} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#FF2800] hover:bg-gray-50 rounded transition-colors">
+                  <button key={cat} onClick={() => navigateToShop({ category: cat, gender: 'men' })} className="w-full text-left px-3 py-2 text-sm text-foreground hover:text-[#FF2800] hover:bg-accent rounded transition-colors">
                     {cat}
                   </button>
                 ))}
@@ -186,11 +186,11 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
             {/* Women */}
             <NavDropdown label="Women" active={activeDropdown === 'women'} onEnter={() => setActiveDropdown('women')} onLeave={() => setActiveDropdown(null)}>
               <div className="p-4 w-48 space-y-1">
-                <button onClick={() => navigateToShop({ gender: 'women' })} className="w-full text-left px-3 py-2 text-sm font-medium text-[#FF2800] hover:bg-gray-50 rounded">
+                <button onClick={() => navigateToShop({ gender: 'women' })} className="w-full text-left px-3 py-2 text-sm font-medium text-[#FF2800] hover:bg-accent rounded">
                   View All Women's
                 </button>
                 {CLOTHING_CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => navigateToShop({ category: cat, gender: 'women' })} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#FF2800] hover:bg-gray-50 rounded transition-colors">
+                  <button key={cat} onClick={() => navigateToShop({ category: cat, gender: 'women' })} className="w-full text-left px-3 py-2 text-sm text-foreground hover:text-[#FF2800] hover:bg-accent rounded transition-colors">
                     {cat}
                   </button>
                 ))}
@@ -200,18 +200,18 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
             {/* Kids */}
             <NavDropdown label="Kids" active={activeDropdown === 'kids'} onEnter={() => setActiveDropdown('kids')} onLeave={() => setActiveDropdown(null)}>
               <div className="p-4 w-48 space-y-1">
-                <button onClick={() => navigateToShop({ gender: 'kids' })} className="w-full text-left px-3 py-2 text-sm font-medium text-[#FF2800] hover:bg-gray-50 rounded">
+                <button onClick={() => navigateToShop({ gender: 'kids' })} className="w-full text-left px-3 py-2 text-sm font-medium text-[#FF2800] hover:bg-accent rounded">
                   View All Kids'
                 </button>
                 {CLOTHING_CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => navigateToShop({ category: cat, gender: 'kids' })} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#FF2800] hover:bg-gray-50 rounded transition-colors">
+                  <button key={cat} onClick={() => navigateToShop({ category: cat, gender: 'kids' })} className="w-full text-left px-3 py-2 text-sm text-foreground hover:text-[#FF2800] hover:bg-accent rounded transition-colors">
                     {cat}
                   </button>
                 ))}
               </div>
             </NavDropdown>
 
-            <button onClick={() => navigateToShop({ category: 'Caps' })} className="px-4 py-3 text-sm font-medium text-gray-700 hover:text-[#FF2800] transition-colors">
+            <button onClick={() => navigateToShop({ category: 'Caps' })} className="px-4 py-3 text-sm font-medium text-foreground hover:text-[#FF2800] transition-colors">
               Headwear
             </button>
 
@@ -219,7 +219,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
             <NavDropdown label="Gifts & Accessories" active={activeDropdown === 'gifts'} onEnter={() => setActiveDropdown('gifts')} onLeave={() => setActiveDropdown(null)}>
               <div className="p-4 w-48 space-y-1">
                 {GIFT_CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => navigateToShop({ category: cat })} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#FF2800] hover:bg-gray-50 rounded transition-colors">
+                  <button key={cat} onClick={() => navigateToShop({ category: cat })} className="w-full text-left px-3 py-2 text-sm text-foreground hover:text-[#FF2800] hover:bg-accent rounded transition-colors">
                     {cat}
                   </button>
                 ))}
@@ -230,7 +230,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
             <NavDropdown label="Collectibles" active={activeDropdown === 'collectibles'} onEnter={() => setActiveDropdown('collectibles')} onLeave={() => setActiveDropdown(null)}>
               <div className="p-4 w-48 space-y-1">
                 {COLLECTIBLE_CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => navigateToShop({ category: cat })} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#FF2800] hover:bg-gray-50 rounded transition-colors">
+                  <button key={cat} onClick={() => navigateToShop({ category: cat })} className="w-full text-left px-3 py-2 text-sm text-foreground hover:text-[#FF2800] hover:bg-accent rounded transition-colors">
                     {cat}
                   </button>
                 ))}
@@ -248,12 +248,12 @@ function NavDropdown({ label, active, onEnter, onLeave, children }: {
 }) {
   return (
     <div className="relative" onMouseEnter={onEnter} onMouseLeave={onLeave}>
-      <button className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-1 ${active ? 'text-[#FF2800]' : 'text-gray-700 hover:text-[#FF2800]'}`}>
+      <button className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-1 ${active ? 'text-[#FF2800]' : 'text-foreground hover:text-[#FF2800]'}`}>
         {label}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${active ? 'rotate-180' : ''}`} />
       </button>
       {active && (
-        <div className="absolute left-0 top-full bg-white border border-gray-200 shadow-lg rounded-lg z-50">
+        <div className="absolute left-0 top-full bg-popover border border-border shadow-lg rounded-lg z-50 text-popover-foreground">
           {children}
         </div>
       )}

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronDown, Menu, X, ShoppingCart, Search } from 'lucide-react';
+import { ChevronDown, Menu, ShoppingCart, Search } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from './ui/sheet';
 import { useCart } from '../lib/CartContext';
 import logo from '../assets/F1 dark logo (2).png';
 
@@ -11,7 +11,7 @@ const F1_TEAMS = [
   'Red Bull', 'Ferrari', 'Mercedes', 'McLaren', 'Aston Martin', 'Alpine', 'Williams', 'AlphaTauri', 'Alfa Romeo', 'Haas'
 ];
 
-const CLOTHING_CATEGORIES = ['T-Shirts', 'Hoodies', 'Pants', 'Accessories'];
+const CLOTHING_CATEGORIES = ['T-Shirts', 'Hoodies', 'Pants', 'Caps', 'Accessories'];
 const GIFT_CATEGORIES = ['Keychains', 'Mugs', 'Posters', 'Stickers', 'Phone Cases'];
 const COLLECTIBLE_CATEGORIES = ['Model Cars', 'Posters', 'Photo Cards', 'Decors', 'Keychains', 'Phone Cases'];
 
@@ -54,7 +54,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
     };
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 60000); // Update every minute to save performance
+    const interval = setInterval(updateCountdown, 60000); // Update every minute
     return () => clearInterval(interval);
   }, []);
 
@@ -80,14 +80,14 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
 
   return (
     <div className="sticky top-0 z-50 w-full flex flex-col">
-      {/* Top Announcement Bar */}
-      <div className="bg-[#000000] text-white text-[10px] sm:text-xs font-mono tracking-widest uppercase py-2 px-4 flex justify-between items-center border-b border-white/10">
-        <div className="hidden sm:block text-white/70">EN / LKR</div>
-        <div className="text-center flex-1 font-medium tracking-[0.15em] text-[#FF2800]">
+      {/* Top Announcement Bar - Adjusted to display fully on mobile */}
+      <div className="bg-[#000000] text-white text-[8px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase py-2 px-2 sm:px-4 flex justify-between items-center border-b border-white/10 overflow-hidden">
+        <div className="text-white/70 whitespace-nowrap flex-shrink-0">EN / LKR</div>
+        <div className="text-center font-medium text-[#FF2800] truncate px-2 flex-1">
           Free shipping on qualifying orders
         </div>
-        <div className="hidden sm:block text-white/90">
-          MONACO GP • <span className="text-[#FF2800]">{timeLeft}</span>
+        <div className="text-white/90 whitespace-nowrap flex-shrink-0">
+          <span className="hidden sm:inline">MONACO GP • </span><span className="text-[#FF2800]">{timeLeft}</span>
         </div>
       </div>
 
@@ -136,12 +136,11 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-80 p-0 bg-popover border-border text-popover-foreground">
+                    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                     <div className="flex flex-col h-full">
                       <div className="flex items-center justify-between p-4 border-b border-border">
                         <span className="font-bold text-lg">Menu</span>
-                        <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
-                          <X className="w-5 h-5 text-foreground" />
-                        </Button>
+                        {/* 🚨 REMOVED manual X button. shadcn handles the close button automatically. */}
                       </div>
                       <div className="p-4 border-b border-border">
                         <form onSubmit={handleSearch}>

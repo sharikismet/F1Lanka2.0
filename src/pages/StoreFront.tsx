@@ -119,8 +119,8 @@ export function StoreFront() {
       </div>
 
       <NextRaceCountdown 
-        raceName="Miami Grand Prix" 
-        targetDate="2026-05-03T15:30:00Z" 
+        raceName="Monaco Grand Prix" 
+        targetDate="2026-06-07T13:00:00Z" 
       />
 
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />

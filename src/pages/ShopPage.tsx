@@ -66,7 +66,6 @@ export function ShopPage() {
       const categoryMatch = selectedCategories.length === 0 ||
         selectedCategories.some(cat => product.category.toLowerCase().includes(cat.toLowerCase()));
 
-      // Unisex products (gender === 'all') should show under all gender filters
       const genderMatch = selectedGender === 'all' ||
         product.gender === 'all' ||
         product.gender === selectedGender;
@@ -101,7 +100,7 @@ export function ShopPage() {
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <MegaMenu
         onSearch={(q) => setSearchQuery(q)}
         onCartClick={() => setCartDrawerOpen(true)}
@@ -113,12 +112,12 @@ export function ShopPage() {
       <div className="container mx-auto px-4 py-6 flex-1">
         {/* Page Header */}
         <div className="mb-6">
-          <a href="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#FF2800] mb-3 transition-colors">
+          <a href="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-[#FF2800] mb-3 transition-colors">
             <ChevronLeft className="w-4 h-4" />
             Back to Home
           </a>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{pageTitle}</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{pageTitle}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             {loading ? 'Loading...' : `${filteredProducts.length} products found`}
           </p>
         </div>
@@ -140,7 +139,7 @@ export function ShopPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="lg:hidden"
+                className="lg:hidden border-border text-foreground hover:bg-accent"
                 onClick={() => setMobileFilterSheetOpen(true)}
               >
                 <SlidersHorizontal className="w-4 h-4 mr-2" />
@@ -156,7 +155,7 @@ export function ShopPage() {
                     setSelectedTeam('');
                     setSearchQuery('');
                   }}
-                  className="text-[#FF2800] hover:text-[#E02400]"
+                  className="text-[#FF2800] hover:text-[#E02400] hover:bg-accent"
                 >
                   Clear all filters
                 </Button>
@@ -165,14 +164,14 @@ export function ShopPage() {
 
             {loading && (
               <div className="text-center py-16">
-                <p className="text-gray-500">Loading products...</p>
+                <p className="text-muted-foreground">Loading products...</p>
               </div>
             )}
 
             {!loading && filteredProducts.length === 0 && (
               <div className="text-center py-16">
-                <p className="text-gray-500 text-lg">No products found matching your filters.</p>
-                <p className="text-gray-400 text-sm mt-2">Try adjusting your filter selection or search term.</p>
+                <p className="text-muted-foreground text-lg">No products found matching your filters.</p>
+                <p className="text-muted-foreground/60 text-sm mt-2">Try adjusting your filter selection or search term.</p>
               </div>
             )}
 
@@ -199,7 +198,7 @@ export function ShopPage() {
                     <PaginationItem>
                       <PaginationPrevious
                         onClick={(e) => { e.preventDefault(); if (currentPage > 1) setCurrentPage(p => p - 1); }}
-                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50 text-foreground hover:bg-accent' : 'cursor-pointer text-foreground hover:bg-accent'}
                       />
                     </PaginationItem>
                     {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -211,13 +210,13 @@ export function ShopPage() {
                       }, [])
                       .map((item, idx) =>
                         item === 'ellipsis' ? (
-                          <PaginationItem key={`e-${idx}`}><PaginationEllipsis /></PaginationItem>
+                          <PaginationItem key={`e-${idx}`}><PaginationEllipsis className="text-muted-foreground" /></PaginationItem>
                         ) : (
                           <PaginationItem key={item}>
                             <PaginationLink
                               onClick={(e) => { e.preventDefault(); setCurrentPage(item); }}
                               isActive={currentPage === item}
-                              className="cursor-pointer"
+                              className={`cursor-pointer ${currentPage === item ? 'bg-[#FF2800] text-white border-[#FF2800] hover:bg-[#E02400]' : 'text-foreground hover:bg-accent border-border'}`}
                             >
                               {item}
                             </PaginationLink>
@@ -227,7 +226,7 @@ export function ShopPage() {
                     <PaginationItem>
                       <PaginationNext
                         onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage(p => p + 1); }}
-                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50 text-foreground hover:bg-accent' : 'cursor-pointer text-foreground hover:bg-accent'}
                       />
                     </PaginationItem>
                   </PaginationContent>

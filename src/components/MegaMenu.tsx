@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { useCart } from '../lib/CartContext';
-import logo from 'figma:asset/30477617e4c72de57d223325aec5d70bfd5a6419_2.png';
+import logo from 'src/assets/F1 dark logo (2).png';
 
 const F1_TEAMS = [
   'Red Bull', 'Ferrari', 'Mercedes', 'McLaren', 'Aston Martin', 'Alpine', 'Williams', 'AlphaTauri', 'Alfa Romeo', 'Haas'

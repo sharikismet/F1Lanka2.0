@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useCart } from '../lib/CartContext';
-import logo from 'figma:asset/30477617e4c72de57d223325aec5d70bfd5a6419.png';
+import logo from 'sharikismet/F1Lanka2.0/src/assets/F1 dark logo (2).png';
 
 interface HeaderProps {
   onSearch: (query: string) => void;

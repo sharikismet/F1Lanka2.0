@@ -29,7 +29,8 @@ const defaultProduct = {
   name: '', price: '', originalPrice: '', image: '', category: '', gender: 'all',
   team: '', driver: '', description: '', stockQuantity: '', isClearance: false,
   sizes: [] as string[], waistSizes: [] as string[], modelCarScale: '', material: '',
-  variantStock: {} as Record<string, number>, // Added variant tracking
+  variantStock: {} as Record<string, number>,
+  images: [] as string[], 
 };
 
 interface ProductFormContentProps {
@@ -40,9 +41,11 @@ interface ProductFormContentProps {
   imagePreview: string;
   setImagePreview: React.Dispatch<React.SetStateAction<string>>;
   handleImageUpload: (file: File) => void;
+  handleMultiImageUpload: (files: FileList) => void;
   toggleSize: (size: string) => void;
   toggleWaistSize: (size: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
+  multiFileInputRef: React.RefObject<HTMLInputElement>;
 }
 
 const ProductFormContent: React.FC<ProductFormContentProps> = ({
@@ -53,15 +56,16 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
   imagePreview,
   setImagePreview,
   handleImageUpload,
+  handleMultiImageUpload,
   toggleSize,
   toggleWaistSize,
   fileInputRef,
+  multiFileInputRef,
 }) => {
   const shouldShowSizes = ['T-Shirts', 'Hoodies'].includes(newProduct.category);
   const shouldShowWaistSizes = newProduct.category === 'Pants';
   const shouldShowModelCarOptions = newProduct.category === 'Model Cars';
 
-  // Helper to update individual variant stock
   const updateVariantStock = (variant: string, qty: number) => {
     setNewProduct(prev => ({
       ...prev,
@@ -118,6 +122,54 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
         </div>
       </div>
 
+      {/* Additional Images (multi-upload gallery) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-semibold">Additional Images (Gallery)</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => multiFileInputRef.current?.click()}
+            disabled={uploading}
+            className="text-xs"
+          >
+            {uploading ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5 mr-1" />}
+            Add Images
+          </Button>
+        </div>
+        <input
+          ref={multiFileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) handleMultiImageUpload(e.target.files);
+            e.target.value = '';
+          }}
+        />
+        {newProduct.images && newProduct.images.length > 0 ? (
+          <div className="grid grid-cols-5 gap-2">
+            {newProduct.images.map((url, idx) => (
+              <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-white/10 bg-[#16161c]">
+                <img src={url} alt={`extra ${idx + 1}`} className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setNewProduct(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))}
+                  className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                  aria-label="Remove image"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500">Upload multiple gallery images shown on the product detail view.</p>
+        )}
+      </div>
+
       <Separator />
 
       {/* Product Name */}
@@ -170,13 +222,12 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border w-16 text-center transition-all ${
                       isSelected
                         ? 'bg-[#FF2800] text-white border-[#FF2800]'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF2800]'
+                        : 'bg-secondary text-foreground border-border hover:border-[#FF2800]'
                     }`}
                   >
                     {size}
                   </button>
                   
-                  {/* Dynamic Stock Input for this specific size */}
                   {isSelected && (
                     <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
                       <Label className="text-xs text-gray-500 whitespace-nowrap">Stock:</Label>
@@ -212,13 +263,12 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border w-16 text-center transition-all ${
                       isSelected
                         ? 'bg-[#FF2800] text-white border-[#FF2800]'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF2800]'
+                        : 'bg-secondary text-foreground border-border hover:border-[#FF2800]'
                     }`}
                   >
                     {size}"
                   </button>
 
-                  {/* Dynamic Stock Input for this specific waist size */}
                   {isSelected && (
                     <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
                       <Label className="text-xs text-gray-500 whitespace-nowrap">Stock:</Label>
@@ -252,7 +302,6 @@ const ProductFormContent: React.FC<ProductFormContentProps> = ({
                 </SelectContent>
               </Select>
 
-              {/* Dynamic Stock Input for the selected scale */}
               {newProduct.modelCarScale && (
                 <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
                   <Label className="text-xs text-gray-500 whitespace-nowrap">Stock for {newProduct.modelCarScale}:</Label>
@@ -363,9 +412,9 @@ export function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const multiFileInputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
-  // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -373,7 +422,6 @@ export function AdminDashboard() {
   const [loginError, setLoginError] = useState('');
   const [checkingSession, setCheckingSession] = useState(true);
 
-  // Check for existing session on mount
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -390,7 +438,6 @@ export function AdminDashboard() {
     checkSession();
   }, []);
 
-  // Load data when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       loadData();
@@ -467,6 +514,31 @@ export function AdminDashboard() {
     setUploading(false);
   };
 
+  const handleMultiImageUpload = async (files: FileList) => {
+    setUploading(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadProductImage(file);
+        if (url) uploaded.push(url);
+      }
+      if (uploaded.length > 0) {
+        setNewProduct(prev => ({
+          ...prev,
+          images: [...(prev.images || []), ...uploaded],
+          image: prev.image || uploaded[0],
+        }));
+        if (!imagePreview) setImagePreview(uploaded[0]);
+        toast.success(`${uploaded.length} image(s) uploaded`);
+      } else {
+        toast.error('No images uploaded. Make sure you are logged in.');
+      }
+    } catch {
+      toast.error('Multi-image upload failed');
+    }
+    setUploading(false);
+  };
+
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.category) {
       toast.error('Please fill in all required fields');
@@ -489,6 +561,7 @@ export function AdminDashboard() {
       modelCarScale: newProduct.modelCarScale || undefined,
       material: newProduct.material || undefined,
       variantStock: Object.keys(newProduct.variantStock).length > 0 ? newProduct.variantStock : undefined,
+      images: newProduct.images && newProduct.images.length > 0 ? newProduct.images : undefined,
     };
     const result = await createProduct(productData);
     if (result) {
@@ -520,6 +593,7 @@ export function AdminDashboard() {
       modelCarScale: newProduct.modelCarScale || undefined,
       material: newProduct.material || undefined,
       variantStock: Object.keys(newProduct.variantStock).length > 0 ? newProduct.variantStock : undefined,
+      images: newProduct.images && newProduct.images.length > 0 ? newProduct.images : undefined,
     };
     const result = await updateProduct(selectedProduct.id, productData);
     if (result) {
@@ -564,6 +638,7 @@ export function AdminDashboard() {
       modelCarScale: product.modelCarScale || '',
       material: product.material || '',
       variantStock: product.variantStock || {},
+      images: (product as any).images || [],
     });
     setImagePreview(product.image);
     setEditProductDialogOpen(true);
@@ -629,7 +704,7 @@ export function AdminDashboard() {
       }
     };
     reader.readAsText(file);
-    e.target.value = ''; // Reset input
+    e.target.value = ''; 
   };
 
   const toggleSize = (size: string) => {
@@ -653,7 +728,7 @@ export function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="dark min-h-screen bg-background bg-carbon text-foreground">
       {/* Show login screen if not authenticated */}
       {checkingSession ? (
         <div className="min-h-screen flex items-center justify-center">
@@ -715,17 +790,13 @@ export function AdminDashboard() {
                   )}
                 </Button>
               </form>
-              <div className="mt-4 text-center text-sm text-gray-500">
-                <p>Designed by::</p>
-                <p className="font-mono text-xs mt-1">Tuan Sharik Ismet AKA Mubtakar</p>
-              </div>
             </CardContent>
           </Card>
         </div>
       ) : (
         <>
       {/* Header */}
-      <header className="bg-[#1a1a1a] text-white sticky top-0 z-50">
+      <header className="bg-secondary text-foreground sticky top-0 z-50 border-b border-border backdrop-blur-md">
         <div className="container mx-auto px-4 py-0">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-6">
@@ -743,8 +814,8 @@ export function AdminDashboard() {
                     onClick={() => setActiveView(item.key)}
                     className={`flex items-center gap-2 px-4 py-4 text-sm font-medium border-b-2 transition-colors ${
                       activeView === item.key
-                        ? 'text-white border-[#FF2800]'
-                        : 'text-gray-400 border-transparent hover:text-white hover:border-gray-600'
+                        ? 'text-foreground border-[#FF2800]'
+                        : 'text-muted-foreground border-transparent hover:text-foreground hover:border-gray-600'
                     }`}
                   >
                     {item.icon}
@@ -757,7 +828,7 @@ export function AdminDashboard() {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="text-gray-300 hover:text-white hover:bg-[#2a2a2a]"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent"
             >
               <Store className="w-4 h-4 mr-2" />
               View Storefront
@@ -766,7 +837,7 @@ export function AdminDashboard() {
               variant="ghost"
               size="sm"
               onClick={handleLogout}
-              className="text-gray-300 hover:text-white hover:bg-[#2a2a2a]"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Logout
@@ -786,22 +857,22 @@ export function AdminDashboard() {
                 { label: 'Orders', value: orders.length, sub: 'Total orders', icon: <ShoppingCart className="w-5 h-5" />, color: 'text-[#FF2800] bg-red-50' },
                 { label: 'Total Stock', value: totalStock, sub: 'Items in stock', icon: <TrendingUp className="w-5 h-5" />, color: 'text-orange-600 bg-orange-50' },
               ].map(stat => (
-                <Card key={stat.label} className="border-0 shadow-sm">
+                <Card key={stat.label} className="border border-border bg-card shadow-[0_0_0_1px_rgba(255,255,255,0.03),0_8px_30px_rgba(0,0,0,0.4)]">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-gray-500 font-medium">{stat.label}</span>
+                      <span className="text-[11px] tracking-[0.25em] uppercase text-muted-foreground font-racing">{stat.label}</span>
                       <div className={`p-2 rounded-lg ${stat.color}`}>{stat.icon}</div>
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                    <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
+                    <div className="text-2xl font-display font-bold text-card-foreground">{stat.value}</div>
+                    <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-lg">Sales Analytics</CardTitle>
+                <CardTitle className="text-lg text-card-foreground">Sales Analytics</CardTitle>
                 <CardDescription>Revenue and orders over the last 7 days</CardDescription>
               </CardHeader>
               <CardContent>
@@ -810,7 +881,7 @@ export function AdminDashboard() {
                   return (
                     <div className="h-[300px] flex items-end gap-3 pt-6 pb-8 relative">
                       {/* Y-axis labels */}
-                      <div className="absolute left-0 top-6 bottom-8 flex flex-col justify-between text-xs text-gray-400 w-16">
+                      <div className="absolute left-0 top-6 bottom-8 flex flex-col justify-between text-xs text-muted-foreground w-16">
                         <span>Rs. {maxRevenue.toLocaleString()}</span>
                         <span>Rs. {Math.round(maxRevenue / 2).toLocaleString()}</span>
                         <span>Rs. 0</span>
@@ -820,14 +891,14 @@ export function AdminDashboard() {
                         {salesData.map((d, i) => (
                           <div key={`bar-${i}`} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group relative">
                             {/* Tooltip on hover */}
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
                               Rs. {d.revenue.toLocaleString()} | {d.orders} orders
                             </div>
                             <div
                               className="w-full bg-[#FF2800] rounded-t-md transition-all hover:bg-[#E02400] min-h-[4px]"
                               style={{ height: `${Math.max((d.revenue / maxRevenue) * 100, 2)}%` }}
                             />
-                            <span className="text-xs text-gray-500 mt-1">{d.date}</span>
+                            <span className="text-xs text-muted-foreground mt-1">{d.date}</span>
                           </div>
                         ))}
                       </div>
@@ -844,8 +915,8 @@ export function AdminDashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Product Inventory</h2>
-                <p className="text-sm text-gray-500">{products.length} products total</p>
+                <h2 className="font-display text-2xl font-bold text-foreground uppercase tracking-wide">Product Inventory</h2>
+                <p className="text-xs text-muted-foreground font-racing tracking-widest uppercase">{products.length} products total</p>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleExportProducts}>
@@ -867,22 +938,22 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-border bg-card">
               <CardContent className="p-4">
                 <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-input-background"
                   />
                 </div>
 
                 <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gray-50">
+                      <TableRow className="bg-secondary hover:bg-secondary border-border">
                         <TableHead>Product</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Team</TableHead>
@@ -894,45 +965,45 @@ export function AdminDashboard() {
                     </TableHeader>
                     <TableBody>
                       {loading ? (
-                        <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">Loading...</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
                       ) : filteredProducts.length === 0 ? (
-                        <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">No products found</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No products found</TableCell></TableRow>
                       ) : filteredProducts.map(product => (
-                        <TableRow key={product.id} className="hover:bg-gray-50">
+                        <TableRow key={product.id} className="hover:bg-accent border-border">
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover border" />
                               <div>
-                                <div className="font-medium text-sm">{product.name}</div>
-                                <div className="text-xs text-gray-400 capitalize">{product.gender === 'all' ? 'Unisex' : product.gender}</div>
+                                <div className="font-medium text-sm text-foreground">{product.name}</div>
+                                <div className="text-xs text-muted-foreground capitalize">{product.gender === 'all' ? 'Unisex' : product.gender}</div>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm">{product.category}</TableCell>
-                          <TableCell className="text-sm">{product.team || '—'}</TableCell>
+                          <TableCell className="text-sm text-foreground">{product.category}</TableCell>
+                          <TableCell className="text-sm text-foreground">{product.team || '—'}</TableCell>
                           <TableCell>
                             <span className={`text-sm font-medium ${product.stockQuantity === 0 ? 'text-red-600' : product.stockQuantity && product.stockQuantity < 10 ? 'text-orange-600' : 'text-green-600'}`}>
                               {product.stockQuantity === 0 ? 'Out' : product.stockQuantity}
                             </span>
                           </TableCell>
-                          <TableCell className="text-sm font-medium">Rs. {product.price.toLocaleString()}</TableCell>
+                          <TableCell className="text-sm font-medium text-foreground">Rs. {product.price.toLocaleString()}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
                               {product.sizes && product.sizes.length > 0 && (
                                 <Badge variant="outline" className="text-[10px] px-1.5">{product.sizes.join(', ')}</Badge>
                               )}
                               {product.isClearance && (
-                                <Badge className="bg-red-100 text-red-700 text-[10px] px-1.5">Sale</Badge>
+                                <Badge className="bg-red-100 text-red-700 text-[10px] px-1.5 border-none">Sale</Badge>
                               )}
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(product)}>
-                                <Edit className="w-3.5 h-3.5 text-gray-500" />
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-accent" onClick={() => openEditDialog(product)}>
+                                <Edit className="w-3.5 h-3.5 text-muted-foreground" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteProduct(product.id)}>
-                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/20" onClick={() => handleDeleteProduct(product.id)}>
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
                               </Button>
                             </div>
                           </TableCell>
@@ -950,16 +1021,16 @@ export function AdminDashboard() {
         {activeView === 'orders' && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Order Management</h2>
-              <p className="text-sm text-gray-500">{orders.length} orders total</p>
+              <h2 className="font-display text-2xl font-bold text-foreground uppercase tracking-wide">Order Management</h2>
+              <p className="text-xs text-muted-foreground font-racing tracking-widest uppercase">{orders.length} orders total</p>
             </div>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-border bg-card">
               <CardContent className="p-4">
                 <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gray-50">
+                      <TableRow className="bg-secondary hover:bg-secondary border-border">
                         <TableHead>Order ID</TableHead>
                         <TableHead>Customer</TableHead>
                         <TableHead>Date</TableHead>
@@ -970,30 +1041,30 @@ export function AdminDashboard() {
                     </TableHeader>
                     <TableBody>
                       {orders.length === 0 ? (
-                        <TableRow><TableCell colSpan={6} className="text-center py-8 text-gray-400">No orders yet</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No orders yet</TableCell></TableRow>
                       ) : orders.map(order => (
-                        <TableRow key={order.id} className="hover:bg-gray-50">
-                          <TableCell className="font-mono text-xs">{order.id.slice(0, 8)}</TableCell>
+                        <TableRow key={order.id} className="hover:bg-accent border-border">
+                          <TableCell className="font-mono text-xs text-foreground">{order.id.slice(0, 8)}</TableCell>
                           
                           {/* Expanded Customer Info with Address */}
                           <TableCell>
-                            <div className="font-medium text-sm">{order.customerName}</div>
-                            <div className="text-xs text-gray-400">{order.customerPhone}</div>
-                            <div className="text-xs text-gray-500 mt-1 max-w-[200px] whitespace-normal">
+                            <div className="font-medium text-sm text-foreground">{order.customerName}</div>
+                            <div className="text-xs text-muted-foreground">{order.customerPhone}</div>
+                            <div className="text-xs text-muted-foreground mt-1 max-w-[200px] whitespace-normal">
                               {order.shippingAddress}
                             </div>
                           </TableCell>
 
-                          <TableCell className="text-sm">{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-sm text-foreground">{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                           
                           {/* Detailed Items List with Sizes/Variants */}
                           <TableCell>
                             <div className="flex flex-col gap-1 max-w-[300px]">
                               {order.items?.map((item: any, idx: number) => (
-                                <div key={idx} className="text-xs leading-relaxed">
+                                <div key={idx} className="text-xs leading-relaxed text-foreground">
                                   <span className="font-medium">{item.quantity}x</span> {item.productName}
                                   {(item.selectedSize || item.selectedWaistSize || item.selectedScale) && (
-                                    <span className="text-gray-500 ml-1">
+                                    <span className="text-muted-foreground ml-1">
                                       ({item.selectedSize || item.selectedWaistSize || item.selectedScale})
                                     </span>
                                   )}
@@ -1002,14 +1073,14 @@ export function AdminDashboard() {
                             </div>
                           </TableCell>
 
-                          <TableCell className="text-sm font-medium">Rs. {order.totalAmount.toLocaleString()}</TableCell>
+                          <TableCell className="text-sm font-medium text-foreground">Rs. {order.totalAmount.toLocaleString()}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={
-                              order.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                              order.status === 'confirmed' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                              order.status === 'shipped' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                              order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-200' :
-                              'bg-red-50 text-red-700 border-red-200'
+                              order.status === 'pending' ? 'bg-yellow-900/30 text-yellow-500 border-yellow-900' :
+                              order.status === 'confirmed' ? 'bg-blue-900/30 text-blue-500 border-blue-900' :
+                              order.status === 'shipped' ? 'bg-purple-900/30 text-purple-500 border-purple-900' :
+                              order.status === 'delivered' ? 'bg-green-900/30 text-green-500 border-green-900' :
+                              'bg-red-900/30 text-red-500 border-red-900'
                             }>
                               {order.status}
                             </Badge>
@@ -1027,7 +1098,7 @@ export function AdminDashboard() {
 
       {/* Add Product Dialog */}
       <Dialog open={addProductDialogOpen} onOpenChange={setAddProductDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-popover text-popover-foreground border-border">
           <DialogHeader>
             <DialogTitle className="text-xl">Add New Product</DialogTitle>
             <DialogDescription>Fill in the product details below. Fields marked with * are required.</DialogDescription>
@@ -1040,9 +1111,11 @@ export function AdminDashboard() {
             imagePreview={imagePreview}
             setImagePreview={setImagePreview}
             handleImageUpload={handleImageUpload}
+            handleMultiImageUpload={handleMultiImageUpload}
             toggleSize={toggleSize}
             toggleWaistSize={toggleWaistSize}
             fileInputRef={fileInputRef}
+            multiFileInputRef={multiFileInputRef}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddProductDialogOpen(false)}>Cancel</Button>
@@ -1053,7 +1126,7 @@ export function AdminDashboard() {
 
       {/* Edit Product Dialog */}
       <Dialog open={editProductDialogOpen} onOpenChange={setEditProductDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-popover text-popover-foreground border-border">
           <DialogHeader>
             <DialogTitle className="text-xl">Edit Product</DialogTitle>
             <DialogDescription>Update the product details below.</DialogDescription>
@@ -1066,9 +1139,11 @@ export function AdminDashboard() {
             imagePreview={imagePreview}
             setImagePreview={setImagePreview}
             handleImageUpload={handleImageUpload}
+            handleMultiImageUpload={handleMultiImageUpload}
             toggleSize={toggleSize}
             toggleWaistSize={toggleWaistSize}
             fileInputRef={fileInputRef}
+            multiFileInputRef={multiFileInputRef}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditProductDialogOpen(false)}>Cancel</Button>

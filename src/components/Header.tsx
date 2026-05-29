@@ -77,7 +77,7 @@ export function Header({
               <img 
                 src={logo} 
                 alt="F1 Lanka" 
-                className="h-12 w-auto object-contain"
+                className="h-8 object-contain drop-shadow-md group-hover:brightness-110 transition-all dark:invert dark:hue-rotate-180 dark:mix-blend-screen"
               />
               <div className="hidden sm:block">
                 <span className="text-sm text-muted-foreground hidden md:inline">Formula 1 Experience in Sri Lanka</span>

@@ -6,7 +6,7 @@ import { MegaMenu } from '../components/MegaMenu';
 import { Footer } from '../components/Footer';
 import { CartDrawer } from '../components/CartDrawer';
 import { Button } from '../components/ui/button';
-import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, MessageCircle } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '94710773717';
 
@@ -30,22 +30,27 @@ export function ProductPage() {
     }
   }, [id]);
 
+  const handleWhatsAppCheckout = () => {
+    if (!product) return;
+    const message = `Hi F1 Lanka! 👋 I would like to order:\n\n*${product.name}*\nPrice: LKR ${product.price.toFixed(2)}\n\nLink: ${window.location.href}`;
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center text-[#FF2800] font-mono tracking-widest text-xs uppercase">LOADING ARCHIVE...</div>;
+    return <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center text-[#FF2800] font-mono tracking-widest text-xs uppercase">LOADING ARCHIVE...</div>;
   }
 
   if (!product) {
-    return <div className="min-h-screen bg-background flex items-center justify-center text-foreground font-mono tracking-widest text-xs uppercase">Product not found.</div>;
+    return <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center text-white font-mono tracking-widest text-xs uppercase">Product not found.</div>;
   }
 
-  // Combine main image and the gallery images
   const allImages = [product.image, ...(product.images || [])].filter(Boolean);
-
   const nextImage = () => setCurrentImageIdx((prev) => (prev + 1) % allImages.length);
   const prevImage = () => setCurrentImageIdx((prev) => (prev - 1 + allImages.length) % allImages.length);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-[#FF2800] selection:text-white flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0c] text-white selection:bg-[#FF2800] selection:text-white flex flex-col">
       <MegaMenu
         onSearch={(q) => { if (q) navigate(`/shop?q=${encodeURIComponent(q)}`); }}
         onCartClick={() => setCartDrawerOpen(true)}
@@ -54,10 +59,10 @@ export function ProductPage() {
         onTeamSelect={() => {}}
       />
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 border-t border-border">
+      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 border-t border-white/5">
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-[10px] md:text-xs font-mono uppercase tracking-widest mb-8 transition-colors"
+          className="flex items-center gap-2 text-gray-400 hover:text-white text-[10px] md:text-xs font-mono uppercase tracking-widest mb-8 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" /> Back to Collection
         </button>
@@ -66,15 +71,13 @@ export function ProductPage() {
           
           {/* LEFT: Image Carousel & Thumbnails */}
           <div className="w-full lg:w-3/5 space-y-4">
-            {/* Main Carousel Image */}
-            <div className="relative w-full aspect-square bg-card border border-border overflow-hidden rounded-md group">
+            <div className="relative w-full aspect-square bg-[#0f0f13] border border-white/5 overflow-hidden rounded-sm group">
               <img 
                 src={allImages[currentImageIdx]} 
                 alt={`${product.name} - View ${currentImageIdx + 1}`} 
                 className="w-full h-full object-cover transition-opacity duration-300"
               />
               
-              {/* Arrow Buttons (Only show if multiple images exist) */}
               {allImages.length > 1 && (
                 <>
                   <button 
@@ -93,14 +96,13 @@ export function ProductPage() {
               )}
             </div>
 
-            {/* Thumbnail Selection Row */}
             {allImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
                 {allImages.map((img, idx) => (
                   <button 
                     key={idx} 
                     onClick={() => setCurrentImageIdx(idx)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-20 h-20 rounded-sm overflow-hidden border-2 transition-all ${
                       currentImageIdx === idx ? 'border-[#FF2800]' : 'border-transparent opacity-50 hover:opacity-100'
                     }`}
                   >
@@ -119,52 +121,65 @@ export function ProductPage() {
                 {product.category}
               </span>
               {product.team && (
-                <span className="text-[10px] text-foreground font-mono tracking-widest uppercase border border-border px-3 py-1.5 bg-accent rounded-sm">
+                <span className="text-[10px] text-gray-300 font-mono tracking-widest uppercase border border-white/10 px-3 py-1.5 bg-white/5 rounded-sm">
                   {product.team}
                 </span>
               )}
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-serif leading-[1.1] mb-6 text-foreground">
+            <h1 className="text-3xl md:text-5xl font-serif leading-[1.1] mb-6 text-white">
               {product.name}
             </h1>
 
-            <div className="flex items-end gap-4 mb-8 pb-8 border-b border-border">
-              <span className="text-2xl font-semibold text-foreground">LKR {product.price.toFixed(2)}</span>
+            <div className="flex items-end gap-4 mb-8 pb-8 border-b border-white/10">
+              <span className="text-2xl font-semibold text-white">LKR {product.price.toFixed(2)}</span>
               {product.originalPrice && (
-                <span className="text-lg text-muted-foreground line-through mb-1">
+                <span className="text-lg text-gray-500 line-through mb-1">
                   LKR {product.originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
 
-            <p className="text-muted-foreground text-sm leading-relaxed mb-10 border-l-2 border-[#FF2800] pl-4">
+            <p className="text-gray-400 text-sm leading-relaxed mb-10 border-l-2 border-[#FF2800] pl-4">
               {product.description || "Official merchandise engineered for peak performance and ultimate comfort. Tailored to standard specifications."}
             </p>
 
-            {product.stockQuantity === 0 ? (
-              <Button disabled className="w-full h-14 bg-accent text-muted-foreground rounded-sm font-mono uppercase tracking-widest text-xs">
-                Out of Stock
-              </Button>
-            ) : (
-              <Button 
-                onClick={() => {
-                  addToCart(product);
-                  setCartDrawerOpen(true);
-                }}
-                className="w-full h-14 bg-[#FF2800] hover:bg-[#E02400] text-white rounded-sm font-mono uppercase tracking-widest text-xs transition-colors shadow-[0_0_20px_rgba(255,40,0,0.1)] hover:shadow-[0_0_30px_rgba(255,40,0,0.3)]"
-              >
-                <ShoppingBag className="w-4 h-4 mr-3" /> Add to Bag
-              </Button>
-            )}
-            
-            <div className="mt-12 space-y-4 text-[10px] md:text-xs font-mono text-muted-foreground tracking-widest uppercase">
-              <p className="flex justify-between border-b border-border pb-3"><span>Gender</span> <span className="text-foreground">{product.gender}</span></p>
-              {product.driver && (
-                <p className="flex justify-between border-b border-border pb-3"><span>Driver</span> <span className="text-foreground">{product.driver}</span></p>
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-3">
+              {product.stockQuantity === 0 ? (
+                <Button disabled className="w-full h-14 bg-white/5 text-gray-500 rounded-sm font-mono uppercase tracking-widest text-xs">
+                  Out of Stock
+                </Button>
+              ) : (
+                <>
+                  <Button 
+                    onClick={() => {
+                      addToCart(product);
+                      setCartDrawerOpen(true);
+                    }}
+                    className="w-full h-14 bg-white hover:bg-gray-200 text-black rounded-sm font-mono uppercase tracking-widest text-xs transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                  >
+                    <ShoppingBag className="w-4 h-4 mr-3" /> Add to Bag
+                  </Button>
+                  
+                  {/* WhatsApp Direct Checkout Button */}
+                  <Button 
+                    onClick={handleWhatsAppCheckout}
+                    className="w-full h-14 bg-[#25D366] hover:bg-[#1DA851] text-white rounded-sm font-mono uppercase tracking-widest text-xs transition-colors shadow-[0_0_20px_rgba(37,211,102,0.15)] hover:shadow-[0_0_30px_rgba(37,211,102,0.3)]"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-3" /> Checkout via WhatsApp
+                  </Button>
+                </>
               )}
-              <p className="flex justify-between border-b border-border pb-3"><span>Shipping</span> <span className="text-foreground">Nationwide</span></p>
-              <p className="flex justify-between border-b border-border pb-3"><span>Authenticity</span> <span className="text-[#FF2800]">Guaranteed</span></p>
+            </div>
+            
+            <div className="mt-12 space-y-4 text-[10px] md:text-xs font-mono text-gray-500 tracking-widest uppercase">
+              <p className="flex justify-between border-b border-white/5 pb-3"><span>Gender</span> <span className="text-white">{product.gender}</span></p>
+              {product.driver && (
+                <p className="flex justify-between border-b border-white/5 pb-3"><span>Driver</span> <span className="text-white">{product.driver}</span></p>
+              )}
+              <p className="flex justify-between border-b border-white/5 pb-3"><span>Shipping</span> <span className="text-white">Nationwide</span></p>
+              <p className="flex justify-between border-b border-white/5 pb-3"><span>Authenticity</span> <span className="text-[#FF2800]">Guaranteed</span></p>
             </div>
 
           </div>

@@ -21,64 +21,8 @@ interface ShopByTeamScrollProps {
 
 export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
   const navigate = useNavigate();
-  // Duplicate list for seamless infinite loop
-  const loop = [...F1_TEAMS, ...F1_TEAMS];
-
-  return (
-    <section className="relative py-16 bg-carbon scanlines overflow-hidden border-y border-white/5">
-      {/* Ambient red glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[60rem] h-[20rem] rounded-full blur-3xl opacity-20"
-             style={{ background: 'radial-gradient(closest-side, #FF2800, transparent)' }} />
-      </div>
-
-      <div className="relative container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <Zap className="w-5 h-5 text-[#FF2800]" />
-            <div>
-              <div className="text-[11px] tracking-[0.35em] text-[#FF2800] font-racing uppercase">// Garage Select</div>
-              <h2 className="font-display text-3xl lg:text-4xl font-bold text-white uppercase tracking-wide">
-                Shop by Team
-              </h2>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-2 text-xs font-racing tracking-widest text-white/40 uppercase">
-            <span className="inline-block w-2 h-2 rounded-full bg-[#FF2800] neon-pulse" />
-            Live Feed
-          </div>
-        </div>
-
-        {/* Auto-scrolling marquee with edge fades */}
-        <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-gradient-to-r from-[#0a0a0c] to-transparent" />
-          <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none bg-gradient-to-l from-[#0a0a0c] to-transparent" />
-
-          <div className="overflow-hidden">
-            <div className="marquee-track flex gap-8 w-max py-6">
-              {loop.map((team, i) => (
-                <button
-                  key={`${team.value}-${i}`}
-                  onClick={() => {
-                    onTeamSelect(team.value);
-                    navigate(`/shop?team=${encodeURIComponent(team.name)}`);
-                  }}
-                  className="group relative flex-shrink-0 flex flex-col items-center gap-3 cursor-pointer"
-                >
-                  <div className="relative w-28 h-28 lg:w-32 lg:h-32">
-                    {/* Spinning conic ring */}
-                    <div
-                      className="absolute inset-0 rounded-full spin-ring opacity-80 group-hover:opacity-100"
-                      style={{
-                        background: `conic-gradient(from 0deg,interface ShopByTeamScrollProps {
-  onTeamSelect: (team: string) => void;
-}
-
-export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
-  const navigate = useNavigate();
   const trackRef = useRef<HTMLDivElement>(null);
 
-  // Advanced, hardware-accelerated JS auto-scroller
   useEffect(() => {
     const scrollContainer = trackRef.current;
     if (!scrollContainer) return;
@@ -87,12 +31,9 @@ export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
     let currentScroll = scrollContainer.scrollLeft;
 
     const scrollLoop = () => {
-      // Advance scroll position by 1 pixel per frame
       currentScroll += 1;
       scrollContainer.scrollLeft = currentScroll;
 
-      // Mathematically perfect loop: We rendered exactly 4 blocks.
-      // When we scroll past the width of 1 block, we seamlessly snap back.
       const singleBlockWidth = scrollContainer.scrollWidth / 4;
 
       if (currentScroll >= singleBlockWidth) {
@@ -105,11 +46,9 @@ export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
 
     animationFrameId = requestAnimationFrame(scrollLoop);
 
-    // Pause functionality on hover or mobile screen touch
     const pauseScroll = () => cancelAnimationFrame(animationFrameId);
     
     const resumeScroll = () => {
-      // Sync the accumulator with wherever the user manually swiped to
       currentScroll = scrollContainer.scrollLeft;
       cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(scrollLoop);
@@ -131,7 +70,6 @@ export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
 
   return (
     <section className="relative py-16 bg-[#0a0a0c] bg-carbon scanlines overflow-hidden border-y border-white/5">
-      {/* Ambient red glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[60rem] h-[20rem] rounded-full blur-3xl opacity-20"
              style={{ background: 'radial-gradient(closest-side, #FF2800, transparent)' }} />
@@ -154,19 +92,15 @@ export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
           </div>
         </div>
 
-        {/* Marquee Track Wrapper */}
         <div className="relative w-full overflow-hidden">
-          {/* Edge gradient overlays to mask elements smoothly loading in and out */}
           <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 z-10 pointer-events-none bg-gradient-to-r from-[#0a0a0c] to-transparent" />
           <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 z-10 pointer-events-none bg-gradient-to-l from-[#0a0a0c] to-transparent" />
 
-          {/* 🚨 FIX: Removed scroll-smooth and snap classes. This unlocks native swiping AND fixes the frozen animation script! */}
           <div 
             ref={trackRef}
             className="flex overflow-x-auto scrollbar-none w-full"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
-            {/* We render exactly 4 identical blocks. The right-padding exactly equals the gap, ensuring mathematical perfection. */}
             {[1, 2, 3, 4].map((setIndex) => (
               <div key={setIndex} className="flex gap-6 md:gap-8 pr-6 md:pr-8 py-6 px-4 flex-shrink-0">
                 {F1_TEAMS.map((team, i) => (
@@ -175,12 +109,11 @@ export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
                     onClick={() => {
                       onTeamSelect(team.value);
                       navigate(`/shop?team=${encodeURIComponent(team.name)}`);
-                      window.scrollTo(0, 0); // Forces view immediately to the top of the shop grid
+                      window.scrollTo(0, 0); 
                     }}
                     className="group relative flex-shrink-0 flex flex-col items-center gap-3 cursor-pointer"
                   >
                     <div className="relative w-28 h-28 lg:w-32 lg:h-32">
-                      {/* Spinning ring line */}
                       <div
                         className="absolute inset-0 rounded-full animate-spin-slow opacity-80 group-hover:opacity-100"
                         style={{
@@ -190,12 +123,10 @@ export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
                           WebkitMaskImage: 'radial-gradient(circle, transparent 58%, #000 60%)',
                         }}
                       />
-                      {/* Radial background pulse glow */}
                       <div
                         className="absolute inset-0 rounded-full blur-xl opacity-0 group-hover:opacity-70 transition-opacity duration-500"
                         style={{ background: team.color }}
                       />
-                      {/* Center Disk Plate */}
                       <div
                         className="relative w-full h-full rounded-full flex items-center justify-center border-2 bg-[#13131a] p-4 overflow-hidden transition-transform duration-500 group-hover:scale-110 group-hover:-translate-y-1"
                         style={{ borderColor: team.color, boxShadow: `inset 0 0 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)` }}

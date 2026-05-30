@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router';
 import { Zap } from 'lucide-react';
 
 const F1_TEAMS = [
-  { name: 'Red Bull', value: 'red-bull', color: '#0600EF', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/red-bull-racing-logo.png.transform/2col/image.png' },
-  { name: 'Ferrari', value: 'ferrari', color: '#DC0000', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/ferrari-logo.png.transform/2col/image.png' },
-  { name: 'Mercedes', value: 'mercedes', color: '#00D2BE', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/mercedes-logo.png.transform/2col/image.png' },
-  { name: 'McLaren', value: 'mclaren', color: '#FF8700', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/mclaren-logo.png.transform/2col/image.png' },
-  { name: 'Aston Martin', value: 'aston-martin', color: '#006F62', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/aston-martin-logo.png.transform/2col/image.png' },
-  { name: 'Alpine', value: 'alpine', color: '#0090FF', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/alpine-logo.png.transform/2col/image.png' },
-  { name: 'Williams', value: 'williams', color: '#005AFF', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/williams-logo.png.transform/2col/image.png' },
-  { name: 'AlphaTauri', value: 'alphatauri', color: '#2B4562', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/rb-logo.png.transform/2col/image.png' },
-  { name: 'Alfa Romeo', value: 'alfa-romeo', color: '#900000', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/kick-sauber-logo.png.transform/2col/image.png' },
-  { name: 'Haas', value: 'haas', color: '#B6BABD', logo: 'https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/haas-f1-team-logo.png.transform/2col/image.png' },
+  { name: 'Red Bull', value: 'red-bull', color: '#0600EF', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Red%20bull%20logo.svg' },
+  { name: 'Ferrari', value: 'ferrari', color: '#DC0000', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Ferrari%20logo.svg' },
+  { name: 'Mercedes', value: 'mercedes', color: '#00D2BE', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Mercedes%20logo.svg' },
+  { name: 'McLaren', value: 'mclaren', color: '#FF8700', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Mclaren%20logo.svg' },
+  { name: 'Aston Martin', value: 'aston-martin', color: '#006F62', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Aston%20martin%20logo.svg' },
+  { name: 'Alpine', value: 'alpine', color: '#0090FF', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Alpine%20Logo.avif' },
+  { name: 'Williams', value: 'williams', color: '#005AFF', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Williams%20logo.svg' },
+  { name: 'AlphaTauri', value: 'alphatauri', color: '#2B4562', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Alpha%20Tauri%20logo.svg' },
+  { name: 'Alfa Romeo', value: 'alfa-romeo', color: '#900000', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Alpha%20Romeo%20logo.svg' },
+  { name: 'Haas', value: 'haas', color: '#B6BABD', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Haas%20logo.svg' },
 ];
 
 interface ShopByTeamScrollProps {

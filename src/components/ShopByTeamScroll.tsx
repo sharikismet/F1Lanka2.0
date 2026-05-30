@@ -6,7 +6,7 @@ const F1_TEAMS = [
   { name: 'Red Bull', value: 'red-bull', color: '#0600EF', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Red%20bull%20logo.svg' },
   { name: 'Ferrari', value: 'ferrari', color: '#DC0000', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Ferrari%20logo.svg' },
   { name: 'Mercedes', value: 'mercedes', color: '#00D2BE', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Mercedes%20logo.svg' },
-  { name: 'McLaren', value: 'mclaren', color: '#FF8700', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Mclaren%20logo.svg' },
+  { name: 'McLaren', value: 'mclaren', color: '#FF8700', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Mclaren%20Orange%20logo%20(1).svg' },
   { name: 'Aston Martin', value: 'aston-martin', color: '#006F62', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Aston%20martin%20logo.svg' },
   { name: 'Alpine', value: 'alpine', color: '#0090FF', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Alpine%20Logo.avif' },
   { name: 'Williams', value: 'williams', color: '#005AFF', logo: 'https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Williams%20logo.svg' },

@@ -1,10 +1,17 @@
-import { MessageCircle } from 'lucide-react';
+'use client'; 
+
+import React, { useState } from 'react';
+import { MessageCircle, X } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '94710773717';
-const WHATSAPP_MESSAGE = encodeURIComponent(
-  "Hi F1 Lanka! 👋 I'm interested in your F1 merchandise. Could you help me with more information?"
-);
-const INSTAGRAM_URL = 'https://www.instagram.com/f1lanka/';
+const IG_USERNAME = 'f1lanka'; 
+
+// Message Templates
+const TEMPLATES = {
+  product: "Hi F1 Lanka! 👋 I'm interested in your F1 merchandise. Could you help me with more information?",
+  track: "Hi F1 Lanka! 📦 I'd like to track my recent order. My order details are: ",
+  help: "Hi F1 Lanka! 🆘 I need some assistance.",
+};
 
 function InstagramIcon() {
   return (
@@ -15,40 +22,134 @@ function InstagramIcon() {
 }
 
 export function FloatingButtons() {
-  return (
-    <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
-      
-      {/* Instagram Button */}
-      <a
-        href={INSTAGRAM_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        // Added 'relative' so the pulse stays contained
-        className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform text-white overflow-visible"
-        style={{
-          background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
-        }}
-        title="Follow us on Instagram" 
-      >
-        <InstagramIcon />
-        {/* Pink pulse for Instagram */}
-        <span className="absolute inset-0 rounded-full bg-[#cc2366] animate-ping opacity-55 -z-10"></span>
-      </a>
+  const [activePopup, setActivePopup] = useState<'whatsapp' | 'instagram' | null>(null);
+  const [isRolling, setIsRolling] = useState<'whatsapp' | 'instagram' | null>(null);
 
-      {/* WhatsApp Button */}
-      <a
-        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        // Added 'relative' and 'bg-[#25D366]'
-        className="relative w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg hover:scale-110 transition-transform text-white"
-        title="Chat with us on WhatsApp"
-      >
-        <MessageCircle className="w-7 h-7" />
-        {/* Green pulse for WhatsApp */}
-        <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-75 -z-10"></span>
-      </a>
+  const handleToggle = (platform: 'whatsapp' | 'instagram') => {
+    if (activePopup === platform) {
+      setActivePopup(null);
+      return;
+    }
+
+    setIsRolling(platform);
+    setActivePopup(null); 
+
+    setTimeout(() => {
+      setIsRolling(null);
+      setActivePopup(platform);
+    }, 500); 
+  };
+
+  const getLink = (type: 'product' | 'track' | 'help') => {
+    if (activePopup === 'whatsapp') {
+      return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(TEMPLATES[type])}`;
+    }
+    if (activePopup === 'instagram') {
+      return `https://ig.me/m/${IG_USERNAME}`;
+    }
+    return '#'; 
+  };
+
+  const handleOptionClick = (e: React.MouseEvent, type: 'product' | 'track' | 'help') => {
+    e.preventDefault();
+    const url = getLink(type);
+    
+    if (url !== '#') {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+    
+    setActivePopup(null);
+  };
+
+  return (
+    // 🚨 FIX 1: Added pointer-events-none to the outer wrapper
+    <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-50 font-sans pointer-events-none">
       
+      {/* Pop-up Menu */}
+      <div
+        className={`mb-2 w-80 bg-[#0a0a0a] text-white rounded-2xl shadow-2xl border border-white/10 transition-all duration-300 origin-bottom-right ${
+          activePopup
+            // 🚨 FIX 2: Restore pointer-events-auto ONLY when the popup is visible
+            ? 'scale-100 opacity-100 translate-y-0 pointer-events-auto'
+            : 'scale-90 opacity-0 translate-y-4 pointer-events-none'
+        }`}
+      >
+        <div className="p-5">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-xs font-bold tracking-widest text-green-500 uppercase">
+                Live • F1 Lanka
+              </span>
+            </div>
+            <button 
+              onClick={() => setActivePopup(null)}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="w-full h-px bg-white/10 mb-4"></div>
+
+          <h3 className="text-[15px] font-medium text-gray-200 mb-5 leading-relaxed">
+            Hi — how can we help? Choose a thread to start on {activePopup === 'whatsapp' ? 'WhatsApp' : 'Instagram'}.
+          </h3>
+
+          {/* Options List */}
+          <div className="flex flex-col gap-2.5">
+            {[
+              { id: 'product', label: 'Product enquiry' },
+              { id: 'track', label: 'Track an order' },
+              { id: 'help', label: 'Need help' },
+            ].map((option) => (
+              <button
+                key={option.id}
+                onClick={(e) => handleOptionClick(e, option.id as 'product' | 'track' | 'help')} 
+                className="w-full px-4 py-3.5 bg-transparent border border-white/10 rounded-xl flex items-center gap-3 text-sm font-medium hover:bg-white/5 hover:border-white/20 transition-all text-left"
+              >
+                <span className="text-gray-400 text-lg">✦</span>
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 🚨 FIX 3: Wrapped the buttons in a div with pointer-events-auto so they can still be clicked */}
+      <div className="flex flex-col gap-3 pointer-events-auto">
+        {/* Instagram Button */}
+        <button
+          onClick={() => handleToggle('instagram')}
+          className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-500 text-white overflow-visible hover:scale-110 ${
+            isRolling === 'instagram' ? '-rotate-[360deg]' : 'rotate-0'
+          }`}
+          style={{
+            background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
+          }}
+          title="Chat with us on Instagram"
+        >
+          <InstagramIcon />
+          {!activePopup && isRolling !== 'instagram' && (
+            <span className="absolute inset-0 rounded-full bg-[#cc2366] animate-ping opacity-55 -z-10"></span>
+          )}
+        </button>
+
+        {/* WhatsApp Button */}
+        <button
+          onClick={() => handleToggle('whatsapp')}
+          className={`relative w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg transition-all duration-500 text-white hover:scale-110 ${
+            isRolling === 'whatsapp' ? '-rotate-[360deg]' : 'rotate-0'
+          }`}
+          title="Chat with us on WhatsApp"
+        >
+          <MessageCircle className="w-7 h-7" />
+          {!activePopup && isRolling !== 'whatsapp' && (
+            <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-75 -z-10"></span>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

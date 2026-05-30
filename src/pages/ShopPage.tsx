@@ -1,9 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useNavigate } from 'react-router';
 import { MegaMenu } from '../components/MegaMenu';
 import { ProductFilters } from '../components/ProductFilters';
 import { ProductCard } from '../components/ProductCard';
-import { ProductDetailDialog } from '../components/ProductDetailDialog';
 import { CartDrawer } from '../components/CartDrawer';
 import { MobileFilterSheet } from '../components/MobileFilterSheet';
 import { Footer } from '../components/Footer';
@@ -22,6 +21,7 @@ const WHATSAPP_NUMBER = '94710773717';
 
 export function ShopPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate(); // 🚨 Added useNavigate to route to the actual product page
 
   // Read filters from URL params
   const urlCategory = searchParams.get('category') || '';
@@ -35,11 +35,15 @@ export function ShopPage() {
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [mobileFilterSheetOpen, setMobileFilterSheetOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 🚨 FIX: Force scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadProducts();
+  }, []);
 
   // Sync URL params to state when they change
   useEffect(() => {
@@ -48,11 +52,8 @@ export function ShopPage() {
     setSelectedGender(urlGender);
     setSelectedTeam(urlTeam);
     setSearchQuery(urlSearch);
+    window.scrollTo(0, 0); // 🚨 FIX: Scroll to top when filters change via URL
   }, [urlCategory, urlGender, urlTeam, urlSearch]);
-
-  useEffect(() => {
-    loadProducts();
-  }, []);
 
   const loadProducts = async () => {
     setLoading(true);
@@ -85,6 +86,7 @@ export function ShopPage() {
 
   useEffect(() => {
     setCurrentPage(1);
+    window.scrollTo(0, 0); // 🚨 FIX: Scroll to top when manual filter states change
   }, [selectedCategories, selectedGender, selectedTeam, searchQuery]);
 
   // Build page title
@@ -181,9 +183,10 @@ export function ShopPage() {
                   <ProductCard
                     key={product.id}
                     {...product}
+                    // 🚨 FIX: Navigate to the beautiful Product Page instead of the old Quick View Modal
                     onClick={() => {
-                      setSelectedProduct(product);
-                      setDialogOpen(true);
+                      navigate(`/product/${product.id}`);
+                      window.scrollTo(0, 0);
                     }}
                   />
                 ))}
@@ -197,7 +200,13 @@ export function ShopPage() {
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={(e) => { e.preventDefault(); if (currentPage > 1) setCurrentPage(p => p - 1); }}
+                        onClick={(e) => { 
+                          e.preventDefault(); 
+                          if (currentPage > 1) {
+                            setCurrentPage(p => p - 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); // 🚨 FIX: Scroll to top on page change
+                          }
+                        }}
                         className={currentPage === 1 ? 'pointer-events-none opacity-50 text-foreground hover:bg-accent' : 'cursor-pointer text-foreground hover:bg-accent'}
                       />
                     </PaginationItem>
@@ -214,7 +223,11 @@ export function ShopPage() {
                         ) : (
                           <PaginationItem key={item}>
                             <PaginationLink
-                              onClick={(e) => { e.preventDefault(); setCurrentPage(item); }}
+                              onClick={(e) => { 
+                                e.preventDefault(); 
+                                setCurrentPage(item);
+                                window.scrollTo({ top: 0, behavior: 'smooth' }); // 🚨 FIX: Scroll to top on page change
+                              }}
                               isActive={currentPage === item}
                               className={`cursor-pointer ${currentPage === item ? 'bg-[#FF2800] text-white border-[#FF2800] hover:bg-[#E02400]' : 'text-foreground hover:bg-accent border-border'}`}
                             >
@@ -225,7 +238,13 @@ export function ShopPage() {
                       )}
                     <PaginationItem>
                       <PaginationNext
-                        onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage(p => p + 1); }}
+                        onClick={(e) => { 
+                          e.preventDefault(); 
+                          if (currentPage < totalPages) {
+                            setCurrentPage(p => p + 1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); // 🚨 FIX: Scroll to top on page change
+                          }
+                        }}
                         className={currentPage === totalPages ? 'pointer-events-none opacity-50 text-foreground hover:bg-accent' : 'cursor-pointer text-foreground hover:bg-accent'}
                       />
                     </PaginationItem>
@@ -237,7 +256,6 @@ export function ShopPage() {
         </div>
       </div>
 
-      <ProductDetailDialog product={selectedProduct} open={dialogOpen} onOpenChange={setDialogOpen} />
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />
       <MobileFilterSheet
         open={mobileFilterSheetOpen}

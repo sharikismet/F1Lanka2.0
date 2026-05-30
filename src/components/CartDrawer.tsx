@@ -42,7 +42,6 @@ export function CartDrawer({ open, onOpenChange, whatsappNumber }: CartDrawerPro
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      {/* 🚨 FIX: Applied dark theme styling to the SheetContent */}
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto bg-[#0a0a0c] border-l border-white/10 text-white">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-white">
@@ -165,14 +164,16 @@ export function CartDrawer({ open, onOpenChange, whatsappNumber }: CartDrawerPro
                 </div>
                 <div className="flex justify-between mb-2 text-sm text-gray-500">
                   <span>Shipping</span>
-                  <span>{totalPrice >= 5000 ? 'FREE' : 'Calculated at checkout'}</span>
+                  {/* 🚨 FIX: Updated math logic to 8000 */}
+                  <span>{totalPrice >= 8000 ? 'FREE' : 'Calculated at checkout'}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t border-white/10 pt-2 mt-2">
                   <span className="text-white">Total</span>
                   <span className="text-[#FF2800]">LKR {totalPrice.toFixed(2)}</span>
                 </div>
 
-                {totalPrice >= 5000 && (
+                {/* 🚨 FIX: Updated math logic to 8000 */}
+                {totalPrice >= 8000 && (
                   <p className="text-sm text-[#25D366] mt-2 flex items-center gap-1">
                     🎉 You qualify for FREE shipping!
                   </p>
@@ -181,7 +182,6 @@ export function CartDrawer({ open, onOpenChange, whatsappNumber }: CartDrawerPro
 
               {/* Checkout Buttons */}
               <div className="space-y-3">
-                {/* 🚨 FIX: WhatsApp is now the sole checkout button */}
                 <Button
                   className="w-full h-14 bg-[#25D366] hover:bg-[#1DA851] text-white shadow-[0_0_20px_rgba(37,211,102,0.15)] rounded-sm font-mono uppercase tracking-widest text-xs transition-colors"
                   size="lg"
@@ -207,7 +207,8 @@ export function CartDrawer({ open, onOpenChange, whatsappNumber }: CartDrawerPro
                   💬 <strong className="text-gray-200">WhatsApp Checkout:</strong> Send your order directly to us via WhatsApp for quick processing.
                 </p>
                 <p className="text-xs text-gray-400">
-                  🚚 <strong className="text-gray-200">Free shipping</strong> on orders over LKR 5,000.
+                  {/* 🚨 FIX: Updated display text to 8,000 */}
+                  🚚 <strong className="text-gray-200">Free shipping</strong> on orders over LKR 8,000.
                 </p>
               </div>
             </>

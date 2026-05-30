@@ -1,6 +1,6 @@
 import * as React from "react";
 import Autoplay from "embla-carousel-autoplay";
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Play, Pause } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -13,7 +13,7 @@ const HERO_SLIDES = [
   {
     chapter: "01 / 03",
     volume: "VOL. 01 — Deppresion",
-    subtitle: "SCUDERIA FERRARI",
+    subtitle: "Charles X Lewis",
     titleStart: "Premium ",
     titleGold: "FERRARI",
     titleEnd: " Race Wear",
@@ -26,7 +26,7 @@ const HERO_SLIDES = [
   {
     chapter: "02 / 03",
     volume: "VOL. 02 — CHAMPIONS",
-    subtitle: "MERCEDES AMG",
+    subtitle: "Kimi X George",
     titleStart: "Exclusive ",
     titleGold: "MERCEDES AMG",
     titleEnd: " Drop",
@@ -39,7 +39,7 @@ const HERO_SLIDES = [
   {
     chapter: "03 / 03",
     volume: "VOL. 03 — Winner takes it all",
-    subtitle: "REDBULL RACING",
+    subtitle: "MAX X Hadjar",
     titleStart: "The ",
     titleGold: "REDBULL",
     titleEnd: " Archive",
@@ -53,21 +53,47 @@ const HERO_SLIDES = [
 
 export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
   const plugin = React.useRef(
-    Autoplay({ delay: 6000, stopOnInteraction: false, stopOnMouseEnter: true })
+    Autoplay({ delay: 6000, stopOnInteraction: false })
   );
+  
+  const [api, setApi] = React.useState<any>();
+  const [current, setCurrent] = React.useState(0);
+  const [isPlaying, setIsPlaying] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!api) return;
+
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  const togglePlay = () => {
+    const autoplay = plugin.current;
+    if (!autoplay) return;
+
+    if (isPlaying) {
+      autoplay.stop();
+      setIsPlaying(false);
+    } else {
+      autoplay.play();
+      setIsPlaying(true);
+    }
+  };
 
   return (
-    <section className="relative w-full bg-[#0a0a0c] overflow-hidden text-white font-sans selection:bg-[#cba153] selection:text-black border-b border-white/5">
-      <Carousel opts={{ loop: true }} plugins={[plugin.current]} className="w-full">
+    <section className="relative w-full bg-[#0a0a0c] overflow-hidden text-white font-sans selection:bg-[#cba153] selection:text-black border-b border-white/5 group">
+      <Carousel setApi={setApi} opts={{ loop: true }} plugins={[plugin.current]} className="w-full">
         <CarouselContent>
           {HERO_SLIDES.map((slide, index) => (
             <CarouselItem key={index}>
               
-              {/* 🚨 FIX: Forced an explicit fixed height (75vh to 90vh) so it cannot collapse to 0px */}
               <div className="relative w-full h-[75vh] lg:h-[90vh]">
                 
                 <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c] via-[#0a0a0c]/80 to-transparent z-10" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/40 to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/60 to-transparent z-10" />
                 
                 <img 
                   src={slide.image} 
@@ -77,7 +103,8 @@ export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
 
                 <div className="absolute right-10 top-[25%] z-20 text-right pointer-events-none opacity-30 hidden md:block">
                    <p className="text-[#cba153] tracking-[0.3em] text-xs uppercase mb-4">Now Featuring</p>
-                   <h2 className="text-7xl lg:text-9xl font-serif italic text-white/20 blur-[1px]">{slide.subtitle.split(' ')[0]}</h2>
+                   {/* 🚨 FIX: Removed .split(' ')[0] so the full subtitle text displays */}
+                   <h2 className="text-7xl lg:text-9xl font-serif italic text-white/20 blur-[1px]">{slide.subtitle}</h2>
                 </div>
 
                 <div className="absolute left-4 md:left-16 lg:left-24 top-[20%] lg:top-[25%] z-30 max-w-2xl pr-4">
@@ -109,7 +136,8 @@ export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
                   </div>
                 </div>
 
-                <div className="absolute bottom-12 left-4 md:left-16 lg:left-24 z-30 flex gap-8 md:gap-20 border-t border-white/10 pt-6 pr-10 w-[90%] md:w-auto">
+                {/* Status Block shifted slightly up so it doesn't overlap the new footer */}
+                <div className="absolute bottom-24 left-4 md:left-16 lg:left-24 z-30 flex gap-8 md:gap-20 border-t border-white/10 pt-6 w-[90%] md:w-auto">
                   <div>
                     <p className="text-[9px] md:text-[10px] text-[#cba153] tracking-[0.2em] uppercase mb-1 flex items-center gap-2">
                       <span className="text-sm leading-none">✧</span> Status
@@ -135,11 +163,57 @@ export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
           ))}
         </CarouselContent>
         
-        <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 border border-white/10 hover:bg-black hover:border-[#cba153] text-white/50 hover:text-[#cba153] transition-all backdrop-blur-sm w-12 h-12" />
-          <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 border border-white/10 hover:bg-black hover:border-[#cba153] text-white/50 hover:text-[#cba153] transition-all backdrop-blur-sm w-12 h-12" />
+        {/* 🚨 FIX: Dark Circular Navigation Arrows */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+          <CarouselPrevious className="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 bg-[#0a0a0c]/60 border border-white/10 hover:bg-[#0a0a0c] hover:border-[#cba153] text-white hover:text-[#cba153] transition-all backdrop-blur-sm w-12 h-12 flex items-center justify-center rounded-full z-40" />
+          <CarouselNext className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 bg-[#0a0a0c]/60 border border-white/10 hover:bg-[#0a0a0c] hover:border-[#cba153] text-white hover:text-[#cba153] transition-all backdrop-blur-sm w-12 h-12 flex items-center justify-center rounded-full z-40" />
         </div>
       </Carousel>
+
+      {/* 🚨 FIX: Custom Media Footer with Play/Pause, Progress Track, and Slide Indicators */}
+      <div className="absolute bottom-0 w-full px-4 md:px-16 lg:px-24 pb-6 z-40 flex items-center justify-between font-mono text-[10px] tracking-widest uppercase text-gray-500">
+        
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={togglePlay} 
+            className="w-10 h-10 rounded-full border border-gray-700 flex items-center justify-center hover:bg-white/5 transition-colors focus:outline-none"
+          >
+            {isPlaying ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white ml-0.5" />}
+          </button>
+
+          <div className="flex items-end gap-4 h-10 pb-1.5 hidden sm:flex">
+            {HERO_SLIDES.map((_, idx) => (
+              <div 
+                key={idx} 
+                className="flex flex-col gap-2 cursor-pointer group" 
+                onClick={() => api?.scrollTo(idx)}
+              >
+                <span className={`transition-colors ${current === idx ? "text-white" : "text-gray-600 group-hover:text-gray-400"}`}>
+                  0{idx + 1}
+                </span>
+                <div className={`h-[1px] w-6 transition-colors ${current === idx ? "bg-[#cba153]" : "bg-gray-700 group-hover:bg-gray-500"}`} />
+              </div>
+            ))}
+          </div>
+
+          <div className="ml-2 sm:ml-4 text-gray-400">
+            {isPlaying ? "PLAYING • AUTO" : "PAUSED • HOVER"}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 flex-1 max-w-sm sm:max-w-md ml-auto sm:ml-8">
+          <div className="h-[1px] flex-1 bg-gray-800 relative hidden sm:block">
+            <div 
+              className="absolute left-0 top-0 h-[1px] bg-[#cba153] transition-all duration-500" 
+              style={{ width: `${((current + 1) / HERO_SLIDES.length) * 100}%` }} 
+            />
+          </div>
+          <span className="flex-shrink-0 text-gray-600">
+            <span className="text-white">0{current + 1}</span> — 0{HERO_SLIDES.length}
+          </span>
+        </div>
+
+      </div>
     </section>
   );
 }

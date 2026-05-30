@@ -160,7 +160,7 @@ export function ShopByTeamScroll({ onTeamSelect }: ShopByTeamScrollProps) {
           <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 z-10 pointer-events-none bg-gradient-to-r from-[#0a0a0c] to-transparent" />
           <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 z-10 pointer-events-none bg-gradient-to-l from-[#0a0a0c] to-transparent" />
 
-          {/* 🚨 FIX: Removed `scroll-smooth` and `snap` classes. This unlocks native swiping AND fixes the frozen animation script! */}
+          {/* 🚨 FIX: Removed scroll-smooth and snap classes. This unlocks native swiping AND fixes the frozen animation script! */}
           <div 
             ref={trackRef}
             className="flex overflow-x-auto scrollbar-none w-full"

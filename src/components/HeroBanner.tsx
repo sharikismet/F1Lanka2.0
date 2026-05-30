@@ -12,39 +12,39 @@ import {
 const HERO_SLIDES = [
   {
     chapter: "01 / 03",
-    volume: "VOL. 01 — MIAMI SPEC",
+    volume: "VOL. 01 — Deppresion",
     subtitle: "SCUDERIA FERRARI",
     titleStart: "Premium ",
-    titleGold: "Charles Leclerc",
+    titleGold: "FERRARI",
     titleEnd: " Race Wear",
     description: "Custom-fit race wear, breathable cotton blends, and official team branding. Tailored for the ultimate fan, ships nationwide.",
-    image: "https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/products/2025-drivers-hero-shot-3.jpg",
-    status: "AVAILABLE NOW",
+    image: "https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Hero%20banners/ferrari%20hero%20banner.svg",
+    status: "LIMITED STOCK",
     release: "Season 2026",
-    edition: "Official Merchandise"
+    edition: "High-Quality Merchandise"
   },
   {
     chapter: "02 / 03",
-    volume: "VOL. 02 — SILVER ARROWS",
+    volume: "VOL. 02 — CHAMPIONS",
     subtitle: "MERCEDES AMG",
     titleStart: "Exclusive ",
-    titleGold: "Lewis Hamilton",
+    titleGold: "MERCEDES AMG",
     titleEnd: " Drop",
     description: "Heavyweight hoodies, minimal branding, and perfect fits. Engineered for the streets and the grandstands.",
-    image: "https://images.unsplash.com/photo-1742412615437-4cefe005d82c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxGb3JtdWxhJTIwMSUyMHJhY2luZyUyMGNhciUyMHNwZWVkfGVufDF8fHx8MTc3NTE0MDc2MHww&ixlib=rb-4.1.0&q=80&w=1080",
+    image: "https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Hero%20banners/Mercedes%20hero%20banner.svg",
     status: "LIMITED DROP",
     release: "Made to order",
-    edition: "Bespoke Collection"
+    edition: "Limited Collection"
   },
   {
     chapter: "03 / 03",
-    volume: "VOL. 03 — CHAMPIONS",
-    subtitle: "RED BULL RACING",
+    volume: "VOL. 03 — Winner takes it all",
+    subtitle: "REDBULL RACING",
     titleStart: "The ",
-    titleGold: "Max Verstappen",
+    titleGold: "REDBULL",
     titleEnd: " Archive",
     description: "Precision-engineered outerwear designed to withstand the elements. Featuring advanced moisture-wicking technology.",
-    image: "https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/products/wp7380258.jpg",
+    image: "https://sqgqsdexujosloavpuso.supabase.co/storage/v1/object/public/Logos/Hero%20banners/REDBULL%20hero%20banner.svg",
     status: "PRE-ORDER",
     release: "Ships in 2 weeks",
     edition: "Limited Run"
@@ -105,9 +105,6 @@ export function HeroBanner({ onShopNow }: { onShopNow: () => void }) {
                       className="bg-[#e5e5e5] hover:bg-white text-black rounded-full px-6 py-2.5 md:px-8 md:py-3 text-xs md:text-sm font-semibold tracking-wide transition-colors flex items-center gap-2"
                     >
                       SHOP COLLECTION <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button className="text-[10px] md:text-xs text-gray-500 tracking-widest uppercase hover:text-[#cba153] transition-colors hidden sm:block">
-                      View Specifications
                     </button>
                   </div>
                 </div>

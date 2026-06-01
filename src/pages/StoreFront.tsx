@@ -14,6 +14,7 @@ import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { useNavigate } from 'react-router';
 import { NextRaceCountdown } from '../components/NextRaceCountdown';
+import { Leaderboard } from '../components/Leaderboard';
 
 const WHATSAPP_NUMBER = '94710773717';
 
@@ -72,7 +73,7 @@ export function StoreFront() {
       <HeroBanner onShopNow={() => navigate('/shop')} />
       <ShopByTeamScroll onTeamSelect={() => {}} />
 
-      <div className="container mx-auto px-4 py-8 flex-1">
+      <div className="container mx-auto px-4 py-8 flex-1 space-y-12">
         {serverError && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -85,6 +86,15 @@ export function StoreFront() {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* 🏁 Race Arena Context Block */}
+        <div className="space-y-6">
+          <NextRaceCountdown 
+            raceName="Monaco Grand Prix" 
+            targetDate="2026-06-07T13:00:00Z" 
+          />
+          <Leaderboard />
+        </div>
 
         {!loading && products.length === 0 && initialized && (
           <div className="text-center py-16">
@@ -109,7 +119,6 @@ export function StoreFront() {
                 <ProductCard
                   key={product.id}
                   {...product}
-                  // 🚨 Navigate to the new page instead of opening a modal
                   onClick={() => navigate(`/product/${product.id}`)}
                 />
               ))}
@@ -117,11 +126,6 @@ export function StoreFront() {
           </div>
         )}
       </div>
-
-      <NextRaceCountdown 
-        raceName="Monaco Grand Prix" 
-        targetDate="2026-06-07T13:00:00Z" 
-      />
 
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />
       <FloatingButtons />

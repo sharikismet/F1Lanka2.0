@@ -43,7 +43,14 @@ export function ProductDetailDialog({
 
   const hasClothingSizes = product.sizes && product.sizes.length > 0;
   const hasWaistSizes = product.waistSizes && product.waistSizes.length > 0;
-  const hasVariants = hasClothingSizes || hasWaistSizes;
+  
+  // Dynamically extract scale variants from variantStock
+  const isModel = ['Model Cars', 'Collectibles', 'Diecast', 'Helmets'].some(cat => product.category.includes(cat)) || product.name.toLowerCase().includes('scale');
+  const extractedScales = isModel && product.variantStock ? Object.keys(product.variantStock) : [];
+  const scales = (product as any).scales?.length > 0 ? (product as any).scales : extractedScales;
+  const hasScales = scales.length > 0;
+
+  const hasVariants = hasClothingSizes || hasWaistSizes || hasScales;
 
   const totalSelectedQuantity = Object.values(variantQuantities).reduce((a, b) => a + b, 0);
 
@@ -68,7 +75,7 @@ export function ProductDetailDialog({
     if (isOutOfStock) return;
     
     if (hasVariants && totalSelectedQuantity === 0) {
-      toast.error('Please select at least one size/variant and quantity.');
+      toast.error('Please select at least one variant and quantity.');
       return;
     }
     
@@ -78,6 +85,7 @@ export function ProductDetailDialog({
           addToCart(product, qty, {
             size: hasClothingSizes ? variantKey : undefined,
             waistSize: hasWaistSizes ? variantKey : undefined,
+            scale: hasScales ? variantKey : undefined,
           });
         }
       });
@@ -191,6 +199,34 @@ export function ProductDetailDialog({
               </div>
             )}
 
+            {hasScales && (
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3">Select Scales & Quantities</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {scales.map((scale: string) => {
+                    const scaleStock = product.variantStock ? (product.variantStock[scale] || 0) : (product.stockQuantity || 0);
+                    const isScaleOut = scaleStock === 0;
+                    const qty = variantQuantities[scale] || 0;
+
+                    return (
+                      <div key={scale} className={`flex items-center justify-between p-2 border rounded-lg transition-all ${isScaleOut ? 'bg-gray-50 opacity-60' : qty > 0 ? 'border-[#FF2800] bg-red-50' : 'border-gray-200'}`}>
+                        <span className={`font-medium ml-1 ${isScaleOut ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{scale}</span>
+                        <div className="flex items-center bg-white border border-gray-200 rounded-md">
+                          <button disabled={isScaleOut || qty === 0} onClick={() => handleQuantityChange(scale, -1)} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30">
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-7 text-center text-sm font-medium">{qty}</span>
+                          <button disabled={isScaleOut || qty >= scaleStock} onClick={() => handleQuantityChange(scale, 1)} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30">
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {!hasVariants && (
               <div className="mb-6">
                 <h3 className="font-semibold mb-3">Quantity</h3>
@@ -206,7 +242,7 @@ export function ProductDetailDialog({
               </div>
             )}
 
-            {product.modelCarScale && (
+            {product.modelCarScale && !hasScales && (
               <div className="mb-6">
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Scale:</span>

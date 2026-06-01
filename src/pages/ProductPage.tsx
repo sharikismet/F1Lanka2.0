@@ -21,7 +21,7 @@ export function ProductPage() {
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   
-  // NEW: Store quantities for multiple variants simultaneously
+  // Store quantities for multiple variants simultaneously
   const [variantQuantities, setVariantQuantities] = useState<Record<string, number>>({});
   const [showVariantError, setShowVariantError] = useState(false);
 
@@ -37,10 +37,17 @@ export function ProductPage() {
 
   const isApparel = product ? ['T-Shirts', 'Hoodies', 'Pants', 'Jackets'].some(cat => product.category.includes(cat)) || product.category.toLowerCase().includes('shirt') : false;
   const isModel = product ? ['Model Cars', 'Collectibles', 'Diecast', 'Helmets'].some(cat => product.category.includes(cat)) || product.name.toLowerCase().includes('scale') : false;
-  const hasVariants = isApparel || isModel;
   
-  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-  const scales = ['1:18', '1:43', '1:64', '1:2'];
+  // Dynamically extract variants from the product data or variantStock
+  const sizes = product?.sizes?.length 
+    ? product.sizes 
+    : (isApparel && product?.variantStock ? Object.keys(product.variantStock) : []);
+    
+  const scales = (product as any)?.scales?.length 
+    ? (product as any).scales 
+    : (isModel && product?.variantStock ? Object.keys(product.variantStock) : []);
+
+  const hasVariants = sizes.length > 0 || scales.length > 0;
 
   const totalSelectedQuantity = Object.values(variantQuantities).reduce((a, b) => a + b, 0);
 
@@ -75,8 +82,8 @@ export function ProductPage() {
       Object.entries(variantQuantities).forEach(([variant, qty]) => {
         if (qty > 0) {
           addToCart(product!, qty, {
-            size: isApparel ? variant : undefined,
-            scale: isModel ? variant : undefined
+            size: sizes.length > 0 ? variant : undefined,
+            scale: scales.length > 0 ? variant : undefined
           });
         }
       });
@@ -107,7 +114,7 @@ export function ProductPage() {
       totalQty = totalSelectedQuantity;
       Object.entries(variantQuantities).forEach(([variant, qty]) => {
         if (qty > 0) {
-          variantText += `\n  • ${isApparel ? 'Size' : 'Scale'} ${variant}: ${qty} qty`;
+          variantText += `\n  • ${sizes.length > 0 ? 'Size' : 'Scale'} ${variant}: ${qty} qty`;
         }
       });
     } else {
@@ -222,7 +229,7 @@ export function ProductPage() {
               )}
             </div>
 
-            {isApparel && (
+            {sizes.length > 0 && (
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400">
@@ -257,7 +264,7 @@ export function ProductPage() {
               </div>
             )}
 
-            {isModel && (
+            {scales.length > 0 && (
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400">

@@ -19,6 +19,11 @@ export function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
+  
+  // State to capture customer variant selections
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedScale, setSelectedScale] = useState<string>('');
+  const [showVariantError, setShowVariantError] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -30,9 +35,51 @@ export function ProductPage() {
     }
   }, [id]);
 
+  // 🚨 FIX: Determine product types to show the correct selectors
+  const isApparel = product ? ['T-Shirts', 'Hoodies', 'Pants', 'Jackets'].some(cat => product.category.includes(cat)) || product.category.toLowerCase().includes('shirt') : false;
+  const isModel = product ? ['Model Cars', 'Collectibles', 'Diecast', 'Helmets'].some(cat => product.category.includes(cat)) || product.name.toLowerCase().includes('scale') : false;
+  
+  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+  const scales = ['1:18', '1:43', '1:64', '1:2']; // Common F1 model and helmet scales
+
+  // Validation function before adding to cart
+  const handleAddToCart = () => {
+    if (isApparel && !selectedSize) {
+      setShowVariantError(true);
+      return;
+    }
+    if (isModel && !selectedScale) {
+      setShowVariantError(true);
+      return;
+    }
+    
+    setShowVariantError(false);
+    addToCart({ ...product, selectedSize, selectedScale } as Product);
+    setCartDrawerOpen(true);
+  };
+
+  // Direct checkout bypass with variant injection
   const handleWhatsAppCheckout = () => {
     if (!product) return;
-    const message = `Hi F1 Lanka! 👋 I would like to order:\n\n*${product.name}*\nPrice: LKR ${product.price.toFixed(2)}\n\nLink: ${window.location.href}`;
+    
+    // Validate selections
+    if (isApparel && !selectedSize) {
+      setShowVariantError(true);
+      return;
+    }
+    if (isModel && !selectedScale) {
+      setShowVariantError(true);
+      return;
+    }
+    
+    setShowVariantError(false);
+    
+    let variantText = '';
+    if (isApparel) variantText = `\n  • Size: ${selectedSize}`;
+    if (isModel) variantText = `\n  • Scale: ${selectedScale}`;
+
+    const message = `*New Order Request*\n\n*${product.name}*${variantText}\n  • Quantity: 1\n  • Price: LKR ${product.price.toFixed(2)}\n\nLink: ${window.location.href}`;
+    
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -140,6 +187,88 @@ export function ProductPage() {
               )}
             </div>
 
+            {/* 🚨 APPAREL SIZE SELECTOR */}
+            {isApparel && (
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400">
+                    Select Size
+                  </span>
+                  {showVariantError && !selectedSize && (
+                    <span className="text-[10px] font-mono uppercase text-[#FF2800] animate-pulse">Required</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {sizes.map(size => {
+                    const isSizeOutOfStock = product.variantStock && product.variantStock[size] === 0;
+
+                    return (
+                      <button
+                        key={size}
+                        disabled={isSizeOutOfStock}
+                        onClick={() => {
+                          setSelectedSize(size);
+                          setShowVariantError(false);
+                        }}
+                        className={`w-12 h-12 flex items-center justify-center border text-sm font-medium transition-all ${
+                          isSizeOutOfStock
+                            ? 'border-white/5 bg-white/5 text-gray-700 cursor-not-allowed line-through'
+                            : selectedSize === size
+                              ? 'border-[#FF2800] bg-[#FF2800]/10 text-[#FF2800]'
+                              : showVariantError 
+                                ? 'border-[#FF2800]/50 text-[#FF2800] hover:border-[#FF2800]' 
+                                : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 🚨 MODEL SCALE SELECTOR */}
+            {isModel && (
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400">
+                    Select Scale
+                  </span>
+                  {showVariantError && !selectedScale && (
+                    <span className="text-[10px] font-mono uppercase text-[#FF2800] animate-pulse">Required</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {scales.map(scale => {
+                    const isScaleOutOfStock = product.variantStock && product.variantStock[scale] === 0;
+
+                    return (
+                      <button
+                        key={scale}
+                        disabled={isScaleOutOfStock}
+                        onClick={() => {
+                          setSelectedScale(scale);
+                          setShowVariantError(false);
+                        }}
+                        className={`px-4 h-12 flex items-center justify-center border text-sm font-medium transition-all ${
+                          isScaleOutOfStock
+                            ? 'border-white/5 bg-white/5 text-gray-700 cursor-not-allowed line-through'
+                            : selectedScale === scale
+                              ? 'border-[#FF2800] bg-[#FF2800]/10 text-[#FF2800]'
+                              : showVariantError 
+                                ? 'border-[#FF2800]/50 text-[#FF2800] hover:border-[#FF2800]' 
+                                : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {scale}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <p className="text-gray-400 text-sm leading-relaxed mb-10 border-l-2 border-[#FF2800] pl-4">
               {product.description || "Official merchandise engineered for peak performance and ultimate comfort. Tailored to standard specifications."}
             </p>
@@ -153,16 +282,12 @@ export function ProductPage() {
               ) : (
                 <>
                   <Button 
-                    onClick={() => {
-                      addToCart(product);
-                      setCartDrawerOpen(true);
-                    }}
+                    onClick={handleAddToCart}
                     className="w-full h-14 bg-white hover:bg-gray-200 text-black rounded-sm font-mono uppercase tracking-widest text-xs transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                   >
                     <ShoppingBag className="w-4 h-4 mr-3" /> Add to Bag
                   </Button>
                   
-                  {/* WhatsApp Direct Checkout Button */}
                   <Button 
                     onClick={handleWhatsAppCheckout}
                     className="w-full h-14 bg-[#25D366] hover:bg-[#1DA851] text-white rounded-sm font-mono uppercase tracking-widest text-xs transition-colors shadow-[0_0_20px_rgba(37,211,102,0.15)] hover:shadow-[0_0_30px_rgba(37,211,102,0.3)]"

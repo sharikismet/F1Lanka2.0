@@ -17,7 +17,7 @@ export interface Product {
   driver?: string;
   description?: string;
   stockQuantity?: number;
-  variantStock?: Record<string, number>; // <-- ADD THIS LINE
+  variantStock?: Record<string, number>;
   // Product variants
   sizes?: string[];
   waistSizes?: string[];
@@ -47,6 +47,17 @@ export interface Order {
   createdAt: string;
   updatedAt?: string;
 }
+
+// 🚨 FIX: URL and Database-Safe Slug Generator for Products
+const generateProductSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Removes special characters (like !, @, #, etc.)
+    .replace(/[\s-]+/g, '-')      // Replaces all spaces and repeated hyphens with a single hyphen
+    .replace(/^-+|-+$/g, '');     // Trims hyphens from the start and end of the string
+};
+
 
 // Test server connection
 export async function testServerConnection(): Promise<{ success: boolean; message: string }> {
@@ -136,6 +147,15 @@ export async function createProduct(productData: Omit<Product, 'id'>): Promise<P
   try {
     const accessToken = await getAccessToken();
 
+    // 🚨 FIX: Automatically generate a readable database ID from the product name
+    const readableId = generateProductSlug(productData.name);
+    
+    // Inject the generated ID into the payload sent to the backend
+    const payload = { 
+      ...productData, 
+      id: readableId 
+    };
+
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
       headers: {
@@ -143,7 +163,7 @@ export async function createProduct(productData: Omit<Product, 'id'>): Promise<P
         'X-User-Token': accessToken || '',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(productData),
+      body: JSON.stringify(payload),
     });
     
     if (!response.ok) {

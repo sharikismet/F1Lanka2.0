@@ -6,7 +6,7 @@ import { MegaMenu } from '../components/MegaMenu';
 import { Footer } from '../components/Footer';
 import { CartDrawer } from '../components/CartDrawer';
 import { Button } from '../components/ui/button';
-import { ChevronLeft, ChevronRight, ShoppingBag, MessageCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, MessageCircle, Minus, Plus } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '94710773717';
 
@@ -20,9 +20,10 @@ export function ProductPage() {
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   
-  // State to capture customer variant selections
+  // States to capture customer selections
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedScale, setSelectedScale] = useState<string>('');
+  const [quantity, setQuantity] = useState<number>(1);
   const [showVariantError, setShowVariantError] = useState(false);
 
   useEffect(() => {
@@ -35,14 +36,12 @@ export function ProductPage() {
     }
   }, [id]);
 
-  // 🚨 FIX: Determine product types to show the correct selectors
   const isApparel = product ? ['T-Shirts', 'Hoodies', 'Pants', 'Jackets'].some(cat => product.category.includes(cat)) || product.category.toLowerCase().includes('shirt') : false;
   const isModel = product ? ['Model Cars', 'Collectibles', 'Diecast', 'Helmets'].some(cat => product.category.includes(cat)) || product.name.toLowerCase().includes('scale') : false;
   
   const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-  const scales = ['1:18', '1:43', '1:64', '1:2']; // Common F1 model and helmet scales
+  const scales = ['1:18', '1:43', '1:64', '1:2'];
 
-  // Validation function before adding to cart
   const handleAddToCart = () => {
     if (isApparel && !selectedSize) {
       setShowVariantError(true);
@@ -54,15 +53,21 @@ export function ProductPage() {
     }
     
     setShowVariantError(false);
-    addToCart({ ...product, selectedSize, selectedScale } as Product);
+    
+    // We pass the quantity in the object so the CartContext can process it
+    addToCart({ 
+      ...product, 
+      selectedSize, 
+      selectedScale, 
+      quantity 
+    } as any);
+    
     setCartDrawerOpen(true);
   };
 
-  // Direct checkout bypass with variant injection
   const handleWhatsAppCheckout = () => {
     if (!product) return;
     
-    // Validate selections
     if (isApparel && !selectedSize) {
       setShowVariantError(true);
       return;
@@ -78,7 +83,9 @@ export function ProductPage() {
     if (isApparel) variantText = `\n  • Size: ${selectedSize}`;
     if (isModel) variantText = `\n  • Scale: ${selectedScale}`;
 
-    const message = `*New Order Request*\n\n*${product.name}*${variantText}\n  • Quantity: 1\n  • Price: LKR ${product.price.toFixed(2)}\n\nLink: ${window.location.href}`;
+    const subtotal = (product.price * quantity).toFixed(2);
+
+    const message = `*New Order Request*\n\n*${product.name}*${variantText}\n  • Quantity: ${quantity}\n  • Price: LKR ${product.price.toFixed(2)} each\n  • Subtotal: LKR ${subtotal}\n\nLink: ${window.location.href}`;
     
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -116,7 +123,6 @@ export function ProductPage() {
 
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 items-start">
           
-          {/* LEFT: Image Carousel & Thumbnails */}
           <div className="w-full lg:w-3/5 space-y-4">
             <div className="relative w-full aspect-square bg-[#0f0f13] border border-white/5 overflow-hidden rounded-sm group">
               <img 
@@ -160,7 +166,6 @@ export function ProductPage() {
             )}
           </div>
 
-          {/* RIGHT: Sticky Product Details */}
           <div className="w-full lg:w-2/5 lg:sticky lg:top-32 flex flex-col">
             
             <div className="flex flex-wrap items-center gap-3 mb-6">
@@ -187,7 +192,6 @@ export function ProductPage() {
               )}
             </div>
 
-            {/* 🚨 APPAREL SIZE SELECTOR */}
             {isApparel && (
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
@@ -200,7 +204,12 @@ export function ProductPage() {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {sizes.map(size => {
-                    const isSizeOutOfStock = product.variantStock && product.variantStock[size] === 0;
+                    // 🚨 FIX: If the size is missing entirely from variantStock, it safely defaults to 0
+                    const sizeStock = product.variantStock !== undefined 
+                      ? (product.variantStock[size] || 0) 
+                      : (product.stockQuantity || 0);
+                    
+                    const isSizeOutOfStock = sizeStock === 0;
 
                     return (
                       <button
@@ -228,7 +237,6 @@ export function ProductPage() {
               </div>
             )}
 
-            {/* 🚨 MODEL SCALE SELECTOR */}
             {isModel && (
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
@@ -241,7 +249,12 @@ export function ProductPage() {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {scales.map(scale => {
-                    const isScaleOutOfStock = product.variantStock && product.variantStock[scale] === 0;
+                    // 🚨 FIX: Safe fallback for scales as well
+                    const scaleStock = product.variantStock !== undefined 
+                      ? (product.variantStock[scale] || 0) 
+                      : (product.stockQuantity || 0);
+
+                    const isScaleOutOfStock = scaleStock === 0;
 
                     return (
                       <button
@@ -269,11 +282,32 @@ export function ProductPage() {
               </div>
             )}
 
+            {/* 🚨 FIX: New Quantity Selector */}
+            <div className="mb-8">
+              <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400 block mb-3">
+                Quantity
+              </span>
+              <div className="flex items-center border border-white/10 w-fit rounded-sm bg-[#121216]">
+                <button 
+                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="w-12 text-center font-medium text-white">{quantity}</span>
+                <button 
+                  onClick={() => setQuantity(q => q + 1)}
+                  className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
             <p className="text-gray-400 text-sm leading-relaxed mb-10 border-l-2 border-[#FF2800] pl-4">
               {product.description || "Official merchandise engineered for peak performance and ultimate comfort. Tailored to standard specifications."}
             </p>
 
-            {/* Action Buttons */}
             <div className="flex flex-col gap-3">
               {product.stockQuantity === 0 ? (
                 <Button disabled className="w-full h-14 bg-white/5 text-gray-500 rounded-sm font-mono uppercase tracking-widest text-xs">

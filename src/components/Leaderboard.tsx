@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Trophy, Flag, Clock, Calendar, MapPin, Loader2 } from 'lucide-react';
 
 interface Driver {
@@ -29,6 +29,12 @@ export function Leaderboard() {
   const [error, setError] = useState<string | null>(null);
   
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+  // Refs for drag-to-scroll functionality
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
 
   useEffect(() => {
     const fetchF1Data = async () => {
@@ -123,6 +129,30 @@ export function Leaderboard() {
     return 'bg-zinc-800 text-gray-300 border-zinc-600';
   };
 
+  // Mouse Drag Events
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    isDragging.current = true;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeft.current = scrollRef.current.scrollLeft;
+  };
+
+  const onMouseLeave = () => {
+    isDragging.current = false;
+  };
+
+  const onMouseUp = () => {
+    isDragging.current = false;
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5; // Multiply for slightly faster scroll speed
+    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
   if (loading) {
     return (
       <div className="w-full h-64 bg-[#0a0a0c] border border-white/10 rounded-sm flex flex-col items-center justify-center text-[#FF2800]">
@@ -153,8 +183,15 @@ export function Leaderboard() {
           </h2>
         </div>
         
-        {/* FIX: Removed scrollbar-none, added custom-scrollbar and pb-2 so the slider is visible */}
-        <div className="flex overflow-x-auto custom-scrollbar pb-2">
+        {/* DRAG-TO-SCROLL CONTAINER */}
+        <div 
+          ref={scrollRef}
+          onMouseDown={onMouseDown}
+          onMouseLeave={onMouseLeave}
+          onMouseUp={onMouseUp}
+          onMouseMove={onMouseMove}
+          className="flex overflow-x-auto scrollbar-none cursor-grab active:cursor-grabbing select-none"
+        >
           <button
             onClick={() => setActiveTab('champ')}
             className={`flex-shrink-0 px-6 py-4 font-mono text-xs uppercase tracking-widest transition-colors border-b-2 ${

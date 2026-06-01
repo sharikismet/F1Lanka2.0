@@ -8,7 +8,7 @@ interface Driver {
   team: string;
   number: string;
   points: number;
-  time?: string; // For race results
+  time?: string;
 }
 
 interface Race {
@@ -27,14 +27,13 @@ export function Leaderboard() {
   const [standings, setStandings] = useState<Driver[]>([]);
   const [schedule, setSchedule] = useState<Race[]>([]);
   const [error, setError] = useState<string | null>(null);
+  
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    // Fetch live 2026 data from Jolpica (Ergast compatible) API
     const fetchF1Data = async () => {
       try {
         setLoading(true);
-        
-        // 1. Fetch Current Championship Standings
         const standingsRes = await fetch('https://api.jolpi.ca/ergast/f1/2026/driverStandings.json');
         const standingsData = await standingsRes.json();
         
@@ -49,12 +48,10 @@ export function Leaderboard() {
         
         setStandings(driversList);
 
-        // 2. Fetch Full 2026 Schedule & Results
         const scheduleRes = await fetch('https://api.jolpi.ca/ergast/f1/2026/results.json?limit=1000');
         const scheduleData = await scheduleRes.json();
         const completedRaces = scheduleData.MRData.RaceTable.Races;
 
-        // Fetch remaining schedule to get upcoming races
         const upcomingRes = await fetch('https://api.jolpi.ca/ergast/f1/2026.json');
         const upcomingData = await upcomingRes.json();
         const allRaces = upcomingData.MRData.RaceTable.Races;
@@ -75,7 +72,6 @@ export function Leaderboard() {
             }));
           }
 
-          // Determine if race is in the past based on current date
           const raceDate = new Date(`${race.date}T${race.time || '00:00:00Z'}`);
           const isCompleted = raceDate < new Date();
 
@@ -102,10 +98,29 @@ export function Leaderboard() {
     fetchF1Data();
   }, []);
 
-  // Helper to grab driver images (Fallback to F1 default silhouette if missing)
-  const getDriverImage = (driverId: string) => {
-    // You can map specific IDs to your own hosted images here if needed
-    return `https://media.formula1.com/d_driver_fallback_image.png`;
+  const handleImageError = (driverId: string) => {
+    setImageErrors(prev => ({ ...prev, [driverId]: true }));
+  };
+
+  const getDriverCode = (fullName: string) => {
+    const parts = fullName.trim().split(' ');
+    const mainPart = parts[parts.length - 1]; 
+    return mainPart ? mainPart.substring(0, 3).toUpperCase() : 'DRV';
+  };
+
+  const getTeamColorClass = (teamName: string) => {
+    const name = teamName.toLowerCase();
+    if (name.includes('mercedes')) return 'bg-[#00A19B] text-black border-[#00A19B]';
+    if (name.includes('ferrari')) return 'bg-[#E80020] text-white border-[#E80020]';
+    if (name.includes('red bull')) return 'bg-[#3671C6] text-white border-[#3671C6]';
+    if (name.includes('mclaren')) return 'bg-[#FF8700] text-black border-[#FF8700]';
+    if (name.includes('alpine')) return 'bg-[#0093CC] text-white border-[#0093CC]';
+    if (name.includes('aston martin')) return 'bg-[#229971] text-white border-[#229971]';
+    if (name.includes('williams')) return 'bg-[#37BEDD] text-white border-[#37BEDD]';
+    if (name.includes('sauber') || name.includes('kick')) return 'bg-[#52E252] text-black border-[#52E252]';
+    if (name.includes('haas')) return 'bg-[#B6BABD] text-black border-[#B6BABD]';
+    if (name.includes('rb') || name.includes('racing bulls')) return 'bg-[#6692FF] text-white border-[#6692FF]';
+    return 'bg-zinc-800 text-gray-300 border-zinc-600';
   };
 
   if (loading) {
@@ -130,7 +145,6 @@ export function Leaderboard() {
 
   return (
     <div className="w-full bg-[#0a0a0c] border border-white/10 rounded-sm overflow-hidden mb-12">
-      {/* Header & Tabs */}
       <div className="bg-[#121216] border-b border-white/10">
         <div className="p-4 md:p-6 flex items-center gap-3 border-b border-white/5">
           <Trophy className="w-6 h-6 text-[#FF2800]" />
@@ -139,8 +153,8 @@ export function Leaderboard() {
           </h2>
         </div>
         
-        {/* Scrollable Tabs */}
-        <div className="flex overflow-x-auto scrollbar-none">
+        {/* FIX: Removed scrollbar-none, added custom-scrollbar and pb-2 so the slider is visible */}
+        <div className="flex overflow-x-auto custom-scrollbar pb-2">
           <button
             onClick={() => setActiveTab('champ')}
             className={`flex-shrink-0 px-6 py-4 font-mono text-xs uppercase tracking-widest transition-colors border-b-2 ${
@@ -174,10 +188,7 @@ export function Leaderboard() {
         </div>
       </div>
 
-      {/* Leaderboard List / Race Results */}
       <div className="p-4 md:p-6 max-h-[600px] overflow-y-auto custom-scrollbar">
-        
-        {/* Race Meta Data */}
         {currentRace && (
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/5">
             <div className="flex flex-col gap-2">
@@ -193,7 +204,6 @@ export function Leaderboard() {
           </div>
         )}
 
-        {/* Notice for upcoming races */}
         {currentRace?.status === 'upcoming' ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-500">
             <Clock className="w-12 h-12 mb-4 opacity-20" />
@@ -201,7 +211,6 @@ export function Leaderboard() {
           </div>
         ) : (
           <div className="space-y-3">
-            {/* Table Header */}
             <div className="flex items-center px-4 py-2 text-[10px] font-mono text-gray-500 uppercase tracking-widest sticky top-0 bg-[#0a0a0c] z-10">
               <div className="w-12 text-center">Pos</div>
               <div className="flex-1 pl-4">Driver</div>
@@ -211,54 +220,63 @@ export function Leaderboard() {
               <div className="w-20 text-right">Pts</div>
             </div>
 
-            {/* Drivers Loop */}
-            {displayData.map((driver) => (
-              <div 
-                key={driver.id}
-                className="flex items-center bg-[#121216] border border-white/5 rounded-sm p-3 hover:border-white/20 transition-colors"
-              >
-                {/* Position */}
-                <div className="w-12 text-center font-mono text-lg font-bold text-gray-400">
-                  {driver.pos}
-                </div>
+            {displayData.map((driver) => {
+              const hasImageError = imageErrors[driver.id];
+              const teamStyles = getTeamColorClass(driver.team);
 
-                {/* Driver Info & Image */}
-                <div className="flex-1 flex items-center gap-4 pl-4 border-l border-white/5">
-                  <div className={`hidden sm:block w-10 h-10 rounded-full overflow-hidden bg-black border-b-2 border-gray-700`}>
-                    <img 
-                      src={getDriverImage(driver.id)} 
-                      alt={driver.name}
-                      className="w-full h-full object-cover object-top opacity-80"
-                    />
+              return (
+                <div 
+                  key={driver.id}
+                  className="flex items-center bg-[#121216] border border-white/5 rounded-sm p-3 hover:border-white/20 transition-colors"
+                >
+                  <div className="w-12 text-center font-mono text-lg font-bold text-gray-400">
+                    {driver.pos}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-white font-bold text-sm md:text-base uppercase tracking-wide">
-                        {driver.name}
-                      </h3>
-                      <span className="text-[10px] font-mono text-gray-600">#{driver.number}</span>
+
+                  <div className="flex-1 flex items-center gap-4 pl-4 border-l border-white/5">
+                    
+                    {!hasImageError ? (
+                      <div className={`w-12 h-12 rounded-full overflow-hidden bg-black border-b-2 ${teamStyles}`}>
+                        <img 
+                          src={`/drivers/${driver.id}.png`} 
+                          alt={driver.name}
+                          onError={() => handleImageError(driver.id)}
+                          className="w-full h-full object-cover object-top"
+                        />
+                      </div>
+                    ) : (
+                      <div className={`w-12 h-12 flex items-center justify-center font-mono text-xs font-bold tracking-tighter rounded-full select-none shadow-sm border-b-2 ${teamStyles}`}>
+                        {getDriverCode(driver.name)}
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-white font-bold text-sm md:text-base uppercase tracking-wide">
+                          {driver.name}
+                        </h3>
+                        <span className="text-[10px] font-mono text-gray-600">#{driver.number}</span>
+                      </div>
+                      <p className="text-gray-500 text-[10px] md:text-xs font-mono tracking-widest uppercase">
+                        {driver.team}
+                      </p>
                     </div>
-                    <p className="text-gray-500 text-[10px] md:text-xs font-mono tracking-widest uppercase">
-                      {driver.team}
-                    </p>
+                  </div>
+
+                  {activeTab !== 'champ' && driver.time && (
+                    <div className="hidden md:block w-32 text-right font-mono text-xs text-gray-400 tracking-wider">
+                      {driver.time}
+                    </div>
+                  )}
+
+                  <div className="w-20 text-right">
+                    <span className="bg-[#FF2800]/10 text-[#FF2800] px-3 py-1.5 rounded-sm font-mono text-sm font-bold border border-[#FF2800]/20">
+                      {driver.points}
+                    </span>
                   </div>
                 </div>
-
-                {/* Time / Gap (Only for specific races, not championship) */}
-                {activeTab !== 'champ' && driver.time && (
-                  <div className="hidden md:block w-32 text-right font-mono text-xs text-gray-400 tracking-wider">
-                    {driver.time}
-                  </div>
-                )}
-
-                {/* Points */}
-                <div className="w-20 text-right">
-                  <span className="bg-[#FF2800]/10 text-[#FF2800] px-3 py-1.5 rounded-sm font-mono text-sm font-bold border border-[#FF2800]/20">
-                    {driver.points}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

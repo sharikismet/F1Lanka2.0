@@ -73,7 +73,7 @@ export function StoreFront() {
       <HeroBanner onShopNow={() => navigate('/shop')} />
       <ShopByTeamScroll onTeamSelect={() => {}} />
 
-      <div className="container mx-auto px-4 py-8 flex-1 space-y-12">
+      <div className="container mx-auto px-4 py-8 flex-1 space-y-16">
         {serverError && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="h-4 w-4" />
@@ -87,15 +87,7 @@ export function StoreFront() {
           </Alert>
         )}
 
-        {/* 🏁 Race Arena Context Block */}
-        <div className="space-y-6">
-          <NextRaceCountdown 
-            raceName="Monaco Grand Prix" 
-            targetDate="2026-06-07T13:00:00Z" 
-          />
-          <Leaderboard />
-        </div>
-
+        {/* 1. Products Section First */}
         {!loading && products.length === 0 && initialized && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg mb-4">Your store is empty!</p>
@@ -125,6 +117,15 @@ export function StoreFront() {
             </div>
           </div>
         )}
+
+        {/* 2. 🏁 Race Arena context block placed directly after products */}
+        <div className="space-y-8 pt-4">
+          <NextRaceCountdown 
+            raceName="Monaco Grand Prix" 
+            targetDate="2026-06-07T13:00:00Z" 
+          />
+          <Leaderboard />
+        </div>
       </div>
 
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />

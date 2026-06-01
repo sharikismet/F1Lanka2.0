@@ -7,6 +7,7 @@ import { Footer } from '../components/Footer';
 import { CartDrawer } from '../components/CartDrawer';
 import { Button } from '../components/ui/button';
 import { ChevronLeft, ChevronRight, ShoppingBag, MessageCircle, Minus, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 const WHATSAPP_NUMBER = '94710773717';
 
@@ -20,10 +21,8 @@ export function ProductPage() {
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
   
-  // States to capture customer selections
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedScale, setSelectedScale] = useState<string>('');
-  const [quantity, setQuantity] = useState<number>(1);
+  // NEW: Store quantities for multiple variants simultaneously
+  const [variantQuantities, setVariantQuantities] = useState<Record<string, number>>({});
   const [showVariantError, setShowVariantError] = useState(false);
 
   useEffect(() => {
@@ -38,41 +37,63 @@ export function ProductPage() {
 
   const isApparel = product ? ['T-Shirts', 'Hoodies', 'Pants', 'Jackets'].some(cat => product.category.includes(cat)) || product.category.toLowerCase().includes('shirt') : false;
   const isModel = product ? ['Model Cars', 'Collectibles', 'Diecast', 'Helmets'].some(cat => product.category.includes(cat)) || product.name.toLowerCase().includes('scale') : false;
+  const hasVariants = isApparel || isModel;
   
   const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
   const scales = ['1:18', '1:43', '1:64', '1:2'];
 
+  const totalSelectedQuantity = Object.values(variantQuantities).reduce((a, b) => a + b, 0);
+
+  const handleQuantityChange = (variantKey: string, delta: number) => {
+    setVariantQuantities(prev => {
+      const current = prev[variantKey] || 0;
+      const next = Math.max(0, current + delta);
+      
+      const stock = product?.variantStock?.[variantKey] ?? product?.stockQuantity ?? 0;
+      if (next > stock) return prev; // Cannot exceed available stock
+      
+      if (next === 0) {
+        const updated = { ...prev };
+        delete updated[variantKey];
+        return updated;
+      }
+      return { ...prev, [variantKey]: next };
+    });
+    setShowVariantError(false);
+  };
+
   const handleAddToCart = () => {
-    if (isApparel && !selectedSize) {
-      setShowVariantError(true);
-      return;
-    }
-    if (isModel && !selectedScale) {
+    if (hasVariants && totalSelectedQuantity === 0) {
       setShowVariantError(true);
       return;
     }
     
     setShowVariantError(false);
     
-    // We pass the quantity in the object so the CartContext can process it
-    addToCart({ 
-      ...product, 
-      selectedSize, 
-      selectedScale, 
-      quantity 
-    } as any);
+    if (hasVariants) {
+      // Loop through all selected variants and add them to cart separately
+      Object.entries(variantQuantities).forEach(([variant, qty]) => {
+        if (qty > 0) {
+          addToCart(product!, qty, {
+            size: isApparel ? variant : undefined,
+            scale: isModel ? variant : undefined
+          });
+        }
+      });
+    } else {
+      // For products without variants
+      const qty = variantQuantities['default'] || 1;
+      addToCart(product!, qty);
+    }
     
     setCartDrawerOpen(true);
+    setVariantQuantities({}); // Reset selections after adding
   };
 
   const handleWhatsAppCheckout = () => {
     if (!product) return;
     
-    if (isApparel && !selectedSize) {
-      setShowVariantError(true);
-      return;
-    }
-    if (isModel && !selectedScale) {
+    if (hasVariants && totalSelectedQuantity === 0) {
       setShowVariantError(true);
       return;
     }
@@ -80,12 +101,21 @@ export function ProductPage() {
     setShowVariantError(false);
     
     let variantText = '';
-    if (isApparel) variantText = `\n  • Size: ${selectedSize}`;
-    if (isModel) variantText = `\n  • Scale: ${selectedScale}`;
+    let totalQty = 0;
 
-    const subtotal = (product.price * quantity).toFixed(2);
+    if (hasVariants) {
+      totalQty = totalSelectedQuantity;
+      Object.entries(variantQuantities).forEach(([variant, qty]) => {
+        if (qty > 0) {
+          variantText += `\n  • ${isApparel ? 'Size' : 'Scale'} ${variant}: ${qty} qty`;
+        }
+      });
+    } else {
+      totalQty = variantQuantities['default'] || 1;
+    }
 
-    const message = `*New Order Request*\n\n*${product.name}*${variantText}\n  • Quantity: ${quantity}\n  • Price: LKR ${product.price.toFixed(2)} each\n  • Subtotal: LKR ${subtotal}\n\nLink: ${window.location.href}`;
+    const subtotal = (product.price * totalQty).toFixed(2);
+    const message = `*New Order Request*\n\n*${product.name}*${variantText}\n  • Total Quantity: ${totalQty}\n  • Price: LKR ${product.price.toFixed(2)} each\n  • Subtotal: LKR ${subtotal}\n\nLink: ${window.location.href}`;
     
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -196,41 +226,31 @@ export function ProductPage() {
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400">
-                    Select Size
+                    Select Sizes & Quantities
                   </span>
-                  {showVariantError && !selectedSize && (
-                    <span className="text-[10px] font-mono uppercase text-[#FF2800] animate-pulse">Required</span>
+                  {showVariantError && totalSelectedQuantity === 0 && (
+                    <span className="text-[10px] font-mono uppercase text-[#FF2800] animate-pulse">Select at least one</span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {sizes.map(size => {
-                    // 🚨 FIX: If the size is missing entirely from variantStock, it safely defaults to 0
-                    const sizeStock = product.variantStock !== undefined 
-                      ? (product.variantStock[size] || 0) 
-                      : (product.stockQuantity || 0);
-                    
+                    const sizeStock = product.variantStock !== undefined ? (product.variantStock[size] || 0) : (product.stockQuantity || 0);
                     const isSizeOutOfStock = sizeStock === 0;
+                    const qty = variantQuantities[size] || 0;
 
                     return (
-                      <button
-                        key={size}
-                        disabled={isSizeOutOfStock}
-                        onClick={() => {
-                          setSelectedSize(size);
-                          setShowVariantError(false);
-                        }}
-                        className={`w-12 h-12 flex items-center justify-center border text-sm font-medium transition-all ${
-                          isSizeOutOfStock
-                            ? 'border-white/5 bg-white/5 text-gray-700 cursor-not-allowed line-through'
-                            : selectedSize === size
-                              ? 'border-[#FF2800] bg-[#FF2800]/10 text-[#FF2800]'
-                              : showVariantError 
-                                ? 'border-[#FF2800]/50 text-[#FF2800] hover:border-[#FF2800]' 
-                                : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-                        }`}
-                      >
-                        {size}
-                      </button>
+                      <div key={size} className={`flex items-center justify-between p-2 border rounded-sm transition-all ${isSizeOutOfStock ? 'border-white/5 bg-white/5 opacity-50' : qty > 0 ? 'border-[#FF2800] bg-[#FF2800]/5' : 'border-white/10 hover:border-white/30'}`}>
+                        <span className={`font-medium ml-2 ${isSizeOutOfStock ? 'text-gray-500 line-through' : 'text-white'}`}>{size}</span>
+                        <div className="flex items-center border border-white/10 rounded-sm bg-[#121216]">
+                          <button disabled={isSizeOutOfStock || qty === 0} onClick={() => handleQuantityChange(size, -1)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 transition-colors">
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-8 text-center text-sm font-medium text-white">{qty}</span>
+                          <button disabled={isSizeOutOfStock || qty >= sizeStock} onClick={() => handleQuantityChange(size, 1)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 transition-colors">
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
@@ -241,68 +261,61 @@ export function ProductPage() {
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400">
-                    Select Scale
+                    Select Scales & Quantities
                   </span>
-                  {showVariantError && !selectedScale && (
-                    <span className="text-[10px] font-mono uppercase text-[#FF2800] animate-pulse">Required</span>
+                  {showVariantError && totalSelectedQuantity === 0 && (
+                    <span className="text-[10px] font-mono uppercase text-[#FF2800] animate-pulse">Select at least one</span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {scales.map(scale => {
-                    // 🚨 FIX: Safe fallback for scales as well
-                    const scaleStock = product.variantStock !== undefined 
-                      ? (product.variantStock[scale] || 0) 
-                      : (product.stockQuantity || 0);
-
+                    const scaleStock = product.variantStock !== undefined ? (product.variantStock[scale] || 0) : (product.stockQuantity || 0);
                     const isScaleOutOfStock = scaleStock === 0;
+                    const qty = variantQuantities[scale] || 0;
 
                     return (
-                      <button
-                        key={scale}
-                        disabled={isScaleOutOfStock}
-                        onClick={() => {
-                          setSelectedScale(scale);
-                          setShowVariantError(false);
-                        }}
-                        className={`px-4 h-12 flex items-center justify-center border text-sm font-medium transition-all ${
-                          isScaleOutOfStock
-                            ? 'border-white/5 bg-white/5 text-gray-700 cursor-not-allowed line-through'
-                            : selectedScale === scale
-                              ? 'border-[#FF2800] bg-[#FF2800]/10 text-[#FF2800]'
-                              : showVariantError 
-                                ? 'border-[#FF2800]/50 text-[#FF2800] hover:border-[#FF2800]' 
-                                : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white'
-                        }`}
-                      >
-                        {scale}
-                      </button>
+                      <div key={scale} className={`flex items-center justify-between p-2 border rounded-sm transition-all ${isScaleOutOfStock ? 'border-white/5 bg-white/5 opacity-50' : qty > 0 ? 'border-[#FF2800] bg-[#FF2800]/5' : 'border-white/10 hover:border-white/30'}`}>
+                        <span className={`font-medium ml-2 ${isScaleOutOfStock ? 'text-gray-500 line-through' : 'text-white'}`}>{scale}</span>
+                        <div className="flex items-center border border-white/10 rounded-sm bg-[#121216]">
+                          <button disabled={isScaleOutOfStock || qty === 0} onClick={() => handleQuantityChange(scale, -1)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 transition-colors">
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-8 text-center text-sm font-medium text-white">{qty}</span>
+                          <button disabled={isScaleOutOfStock || qty >= scaleStock} onClick={() => handleQuantityChange(scale, 1)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 transition-colors">
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
               </div>
             )}
 
-            {/* 🚨 FIX: New Quantity Selector */}
-            <div className="mb-8">
-              <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400 block mb-3">
-                Quantity
-              </span>
-              <div className="flex items-center border border-white/10 w-fit rounded-sm bg-[#121216]">
-                <button 
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="w-12 text-center font-medium text-white">{quantity}</span>
-                <button 
-                  onClick={() => setQuantity(q => q + 1)}
-                  className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
+            {!hasVariants && (
+              <div className="mb-8">
+                <span className="text-[10px] md:text-xs font-mono tracking-widest uppercase text-gray-400 block mb-3">
+                  Quantity
+                </span>
+                <div className="flex items-center border border-white/10 w-fit rounded-sm bg-[#121216]">
+                  <button 
+                    onClick={() => handleQuantityChange('default', -1)}
+                    disabled={(variantQuantities['default'] || 1) <= 1}
+                    className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-12 text-center font-medium text-white">{variantQuantities['default'] || 1}</span>
+                  <button 
+                    onClick={() => handleQuantityChange('default', 1)}
+                    disabled={(variantQuantities['default'] || 1) >= (product.stockQuantity || 0)}
+                    className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             <p className="text-gray-400 text-sm leading-relaxed mb-10 border-l-2 border-[#FF2800] pl-4">
               {product.description || "Official merchandise engineered for peak performance and ultimate comfort. Tailored to standard specifications."}

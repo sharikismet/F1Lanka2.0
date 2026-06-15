@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { Trophy, Flag, Clock, Calendar, MapPin, Loader2 } from 'lucide-react';
 
 interface Driver {
-  id: string;
+  id: string; // OpenF1 uses driver_number as the primary ID
   pos: number;
   name: string;
+  acronym: string;
   team: string;
   number: string;
-  points: number;
+  points: number; 
+  color: string;
   time?: string;
 }
 
@@ -37,62 +39,92 @@ export function Leaderboard() {
   const scrollLeft = useRef(0);
 
   useEffect(() => {
-    const fetchF1Data = async () => {
+    const fetchHybridData = async () => {
       try {
         setLoading(true);
-        // CHANGED: Using "current" instead of "2026" to get the real-time live season
-        const standingsRes = await fetch('https://api.jolpi.ca/ergast/f1/current/driverStandings.json');
+        
+        // ====================================================================
+        // 1. FETCH OPENF1 DATA (Colors, Acronyms, Live Schedule)
+        // ====================================================================
+        const sessionsRes = await fetch('https://api.openf1.org/v1/sessions?year=2026&session_type=Race');
+        const sessionsData = await sessionsRes.json();
+        
+        const driversRes = await fetch('https://api.openf1.org/v1/drivers?session_key=latest');
+        const openF1Drivers = await driversRes.json();
+
+        // ====================================================================
+        // 2. FETCH JOLPICA DATA (Points, Classifications, Times for 2026)
+        // ====================================================================
+        const standingsRes = await fetch('https://api.jolpi.ca/ergast/f1/2026/driverStandings.json');
         const standingsData = await standingsRes.json();
         
-        const driversList = standingsData.MRData.StandingsTable.StandingsLists[0]?.DriverStandings.map((d: any) => ({
-          id: d.Driver.driverId,
-          pos: parseInt(d.position),
-          name: `${d.Driver.givenName} ${d.Driver.familyName}`,
-          team: d.Constructors[0]?.name || 'Unknown',
-          number: d.Driver.permanentNumber || '0',
-          points: parseFloat(d.points),
-        })) || [];
-        
-        setStandings(driversList);
+        const resultsRes = await fetch('https://api.jolpi.ca/ergast/f1/2026/results.json?limit=1000');
+        const resultsData = await resultsRes.json();
+        const completedRaces = resultsData.MRData.RaceTable.Races;
 
-        const scheduleRes = await fetch('https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000');
-        const scheduleData = await scheduleRes.json();
-        const completedRaces = scheduleData.MRData.RaceTable.Races;
-
-        const upcomingRes = await fetch('https://api.jolpi.ca/ergast/f1/current.json');
-        const upcomingData = await upcomingRes.json();
-        const allRaces = upcomingData.MRData.RaceTable.Races;
-
-        const formattedSchedule = allRaces.map((race: any) => {
-          const completedData = completedRaces.find((cr: any) => cr.round === race.round);
+        // Map Championship Standings & Merge with OpenF1 Colors
+        const championshipList = standingsData.MRData.StandingsTable.StandingsLists[0]?.DriverStandings.map((d: any) => {
+          const number = d.Driver.permanentNumber || '0';
+          const f1Driver = openF1Drivers.find((of1: any) => of1.driver_number.toString() === number);
           
-          let results = undefined;
+          return {
+            id: number,
+            pos: parseInt(d.position),
+            name: `${d.Driver.givenName} ${d.Driver.familyName}`,
+            acronym: f1Driver?.name_acronym || d.Driver.familyName.substring(0, 3).toUpperCase(),
+            team: d.Constructors[0]?.name || 'Unknown',
+            number: number,
+            points: parseFloat(d.points),
+            color: f1Driver?.team_colour ? `#${f1Driver.team_colour}` : '#505050'
+          };
+        }) || [];
+        
+        setStandings(championshipList);
+
+        // Map Schedule & Race Results
+        const formattedSchedule = sessionsData.map((session: any) => {
+          // Find matching Jolpica results by matching the round/country
+          const completedData = completedRaces.find((cr: any) => 
+            cr.Circuit.circuitName.toLowerCase().includes(session.location.toLowerCase()) ||
+            session.location.toLowerCase().includes(cr.Circuit.Location.country.toLowerCase())
+          );
+          
+          let raceResults = undefined;
           if (completedData && completedData.Results) {
-            results = completedData.Results.map((res: any) => ({
-              id: res.Driver.driverId,
-              pos: parseInt(res.position),
-              name: `${res.Driver.givenName} ${res.Driver.familyName}`,
-              team: res.Constructor.name,
-              number: res.number,
-              points: parseFloat(res.points),
-              time: res.Time ? res.Time.time : res.status
-            }));
+            raceResults = completedData.Results.map((res: any) => {
+              const number = res.number;
+              const f1Driver = openF1Drivers.find((of1: any) => of1.driver_number.toString() === number);
+              
+              return {
+                id: number,
+                pos: parseInt(res.position),
+                name: `${res.Driver.givenName} ${res.Driver.familyName}`,
+                acronym: f1Driver?.name_acronym || res.Driver.familyName.substring(0, 3).toUpperCase(),
+                team: res.Constructor.name,
+                number: number,
+                points: parseFloat(res.points),
+                color: f1Driver?.team_colour ? `#${f1Driver.team_colour}` : '#505050',
+                time: res.Time ? res.Time.time : res.status
+              };
+            });
           }
 
-          const raceDate = new Date(`${race.date}T${race.time || '00:00:00Z'}`);
+          const raceDate = new Date(session.date_start);
           const isCompleted = raceDate < new Date();
 
           return {
-            id: `round-${race.round}`,
-            round: parseInt(race.round),
-            name: race.raceName,
-            track: race.Circuit.circuitName,
+            id: session.session_key.toString(),
+            round: session.session_key,
+            name: session.meeting_name || session.session_name,
+            track: session.location || session.country_name,
             date: raceDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
             status: isCompleted ? 'completed' : 'upcoming',
-            results: results
+            results: raceResults
           };
         });
 
+        // Sort schedule by date
+        formattedSchedule.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
         setSchedule(formattedSchedule);
         setLoading(false);
       } catch (err) {
@@ -102,32 +134,11 @@ export function Leaderboard() {
       }
     };
 
-    fetchF1Data();
+    fetchHybridData();
   }, []);
 
-  const handleImageError = (driverId: string) => {
-    setImageErrors(prev => ({ ...prev, [driverId]: true }));
-  };
-
-  const getDriverCode = (fullName: string) => {
-    const parts = fullName.trim().split(' ');
-    const mainPart = parts[parts.length - 1]; 
-    return mainPart ? mainPart.substring(0, 3).toUpperCase() : 'DRV';
-  };
-
-  const getTeamColorClass = (teamName: string) => {
-    const name = teamName.toLowerCase();
-    if (name.includes('mercedes')) return 'bg-[#00A19B] text-black border-[#00A19B]';
-    if (name.includes('ferrari')) return 'bg-[#E80020] text-white border-[#E80020]';
-    if (name.includes('red bull')) return 'bg-[#3671C6] text-white border-[#3671C6]';
-    if (name.includes('mclaren')) return 'bg-[#FF8700] text-black border-[#FF8700]';
-    if (name.includes('alpine')) return 'bg-[#0093CC] text-white border-[#0093CC]';
-    if (name.includes('aston martin')) return 'bg-[#229971] text-white border-[#229971]';
-    if (name.includes('williams')) return 'bg-[#37BEDD] text-white border-[#37BEDD]';
-    if (name.includes('sauber') || name.includes('kick')) return 'bg-[#52E252] text-black border-[#52E252]';
-    if (name.includes('haas')) return 'bg-[#B6BABD] text-black border-[#B6BABD]';
-    if (name.includes('rb') || name.includes('racing bulls')) return 'bg-[#6692FF] text-white border-[#6692FF]';
-    return 'bg-zinc-800 text-gray-300 border-zinc-600';
+  const handleImageError = (driverNumber: string) => {
+    setImageErrors(prev => ({ ...prev, [driverNumber]: true }));
   };
 
   // Mouse Drag Events
@@ -138,13 +149,8 @@ export function Leaderboard() {
     scrollLeft.current = scrollRef.current.scrollLeft;
   };
 
-  const onMouseLeave = () => {
-    isDragging.current = false;
-  };
-
-  const onMouseUp = () => {
-    isDragging.current = false;
-  };
+  const onMouseLeave = () => { isDragging.current = false; };
+  const onMouseUp = () => { isDragging.current = false; };
 
   const onMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current || !scrollRef.current) return;
@@ -158,7 +164,7 @@ export function Leaderboard() {
     return (
       <div className="w-full h-64 bg-[#0a0a0c] border border-white/10 rounded-sm flex flex-col items-center justify-center text-[#FF2800]">
         <Loader2 className="w-8 h-8 animate-spin mb-4" />
-        <p className="font-mono text-xs uppercase tracking-widest">Connecting to FIA Data Center...</p>
+        <p className="font-mono text-xs uppercase tracking-widest">Connecting to OpenF1 Live Telemetry...</p>
       </div>
     );
   }
@@ -180,7 +186,7 @@ export function Leaderboard() {
         <div className="p-4 md:p-6 flex items-center gap-3 border-b border-white/5">
           <Trophy className="w-6 h-6 text-[#FF2800]" />
           <h2 className="text-xl md:text-2xl font-serif text-white uppercase tracking-wide">
-            Live Grid Standings
+            2026 Grid Standings
           </h2>
         </div>
         
@@ -247,10 +253,10 @@ export function Leaderboard() {
             <Clock className="w-12 h-12 mb-4 opacity-20" />
             <p className="font-mono text-sm uppercase tracking-widest">Race has not started yet</p>
           </div>
-        ) : displayData.length === 0 ? (
+        ) : displayData.length === 0 && activeTab !== 'champ' ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-500">
             <Trophy className="w-12 h-12 mb-4 opacity-20" />
-            <p className="font-mono text-sm uppercase tracking-widest">Awaiting Official Results</p>
+            <p className="font-mono text-sm uppercase tracking-widest">Awaiting Official OpenF1 Telemetry</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -264,8 +270,7 @@ export function Leaderboard() {
             </div>
 
             {displayData.map((driver) => {
-              const hasImageError = imageErrors[driver.id];
-              const teamStyles = getTeamColorClass(driver.team);
+              const hasImageError = imageErrors[driver.number];
 
               return (
                 <div 
@@ -279,17 +284,24 @@ export function Leaderboard() {
                   <div className="flex-1 flex items-center gap-4 pl-4 border-l border-white/5">
                     
                     {!hasImageError ? (
-                      <div className={`w-12 h-12 rounded-full overflow-hidden bg-black border-b-2 ${teamStyles}`}>
+                      <div 
+                        className="w-12 h-12 rounded-full overflow-hidden bg-black border-b-2"
+                        style={{ borderColor: driver.color }}
+                      >
+                        {/* Loads from public/drivers/44.png, 16.png, etc. */}
                         <img 
-                          src={`/drivers/${driver.id}.png`} 
+                          src={`/drivers/${driver.number}.png`} 
                           alt={driver.name}
-                          onError={() => handleImageError(driver.id)}
+                          onError={() => handleImageError(driver.number)}
                           className="w-full h-full object-cover object-top"
                         />
                       </div>
                     ) : (
-                      <div className={`w-12 h-12 flex items-center justify-center font-mono text-xs font-bold tracking-tighter rounded-full select-none shadow-sm border-b-2 ${teamStyles}`}>
-                        {getDriverCode(driver.name)}
+                      <div 
+                        className="w-12 h-12 flex items-center justify-center font-mono text-xs font-bold tracking-tighter rounded-full select-none shadow-sm border-b-2 text-white bg-zinc-800"
+                        style={{ borderColor: driver.color }}
+                      >
+                        {driver.acronym}
                       </div>
                     )}
 

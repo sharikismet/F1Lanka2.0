@@ -40,7 +40,8 @@ export function Leaderboard() {
     const fetchF1Data = async () => {
       try {
         setLoading(true);
-        const standingsRes = await fetch('https://api.jolpi.ca/ergast/f1/2026/driverStandings.json');
+        // CHANGED: Using "current" instead of "2026" to get the real-time live season
+        const standingsRes = await fetch('https://api.jolpi.ca/ergast/f1/current/driverStandings.json');
         const standingsData = await standingsRes.json();
         
         const driversList = standingsData.MRData.StandingsTable.StandingsLists[0]?.DriverStandings.map((d: any) => ({
@@ -54,11 +55,11 @@ export function Leaderboard() {
         
         setStandings(driversList);
 
-        const scheduleRes = await fetch('https://api.jolpi.ca/ergast/f1/2026/results.json?limit=1000');
+        const scheduleRes = await fetch('https://api.jolpi.ca/ergast/f1/current/results.json?limit=1000');
         const scheduleData = await scheduleRes.json();
         const completedRaces = scheduleData.MRData.RaceTable.Races;
 
-        const upcomingRes = await fetch('https://api.jolpi.ca/ergast/f1/2026.json');
+        const upcomingRes = await fetch('https://api.jolpi.ca/ergast/f1/current.json');
         const upcomingData = await upcomingRes.json();
         const allRaces = upcomingData.MRData.RaceTable.Races;
 
@@ -149,7 +150,7 @@ export function Leaderboard() {
     if (!isDragging.current || !scrollRef.current) return;
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.5; // Multiply for slightly faster scroll speed
+    const walk = (x - startX.current) * 1.5; 
     scrollRef.current.scrollLeft = scrollLeft.current - walk;
   };
 
@@ -179,7 +180,7 @@ export function Leaderboard() {
         <div className="p-4 md:p-6 flex items-center gap-3 border-b border-white/5">
           <Trophy className="w-6 h-6 text-[#FF2800]" />
           <h2 className="text-xl md:text-2xl font-serif text-white uppercase tracking-wide">
-            2026 Grid Standings
+            Live Grid Standings
           </h2>
         </div>
         
@@ -190,7 +191,7 @@ export function Leaderboard() {
           onMouseLeave={onMouseLeave}
           onMouseUp={onMouseUp}
           onMouseMove={onMouseMove}
-          className="flex overflow-x-auto scrollbar-none cursor-grab active:cursor-grabbing select-none"
+          className="flex overflow-x-auto custom-scrollbar pb-2 cursor-grab active:cursor-grabbing select-none"
         >
           <button
             onClick={() => setActiveTab('champ')}
@@ -214,13 +215,13 @@ export function Leaderboard() {
                 activeTab === race.id
                   ? 'border-[#FF2800] text-white bg-white/5'
                   : 'border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                {race.status === 'completed' ? <Flag className="w-3 h-3 text-white" /> : <Clock className="w-3 h-3" />}
-                {race.name}
-              </div>
-            </button>
+            }`}
+          >
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              {race.status === 'completed' ? <Flag className="w-3 h-3 text-white" /> : <Clock className="w-3 h-3" />}
+              {race.name}
+            </div>
+          </button>
           ))}
         </div>
       </div>
@@ -245,6 +246,11 @@ export function Leaderboard() {
           <div className="flex flex-col items-center justify-center py-16 text-gray-500">
             <Clock className="w-12 h-12 mb-4 opacity-20" />
             <p className="font-mono text-sm uppercase tracking-widest">Race has not started yet</p>
+          </div>
+        ) : displayData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+            <Trophy className="w-12 h-12 mb-4 opacity-20" />
+            <p className="font-mono text-sm uppercase tracking-widest">Awaiting Official Results</p>
           </div>
         ) : (
           <div className="space-y-3">

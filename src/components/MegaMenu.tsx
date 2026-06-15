@@ -54,7 +54,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
     };
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 60000); // Update every minute
+    const interval = setInterval(updateCountdown, 60000); // Updates every minute
     return () => clearInterval(interval);
   }, []);
 

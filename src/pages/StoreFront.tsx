@@ -124,8 +124,8 @@ export function StoreFront() {
         {/* Race Arena Context Block */}
         <div className="space-y-8 pt-4">
           <NextRaceCountdown 
-            raceName="Monaco Grand Prix" 
-            targetDate="2026-06-07T13:00:00Z" 
+            raceName="Austrian Grand Prix" 
+            targetDate="2026-06-26T18:30:00+05:30"
           />
           <Leaderboard />
         </div>
@@ -165,7 +165,7 @@ export function StoreFront() {
               </h3>
               
               <p className="text-xs text-gray-400 leading-relaxed font-sans max-w-xl">
-                Acquire a highly specialized, fully integrated e-commerce architecture engineered directly for the global motorsport niche. This storefront captures premium, high-intent traffic by attracting dedicated <strong className="text-white font-medium">F1 enthusiasts</strong> with real-time race data analytics, offering a flawless transition from live fan engagement directly into targeted merchandising streams.
+                Acquire a highly specialized, fully integrated E-commerce architecture engineered directly for the global motorsport niche. This online store captures premium, high-intent traffic by attracting dedicated <strong className="text-white font-medium">F1 enthusiasts</strong> with real time race data analytics, offering a flawless transition from live fan engagement directly into targeted merchandising streams.
               </p>
 
               {/* Call To Action Row */}

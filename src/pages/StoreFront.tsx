@@ -10,7 +10,7 @@ import type { Product } from '../lib/api';
 import { ProductCard } from '../components/ProductCard';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, X, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { useNavigate } from 'react-router';
 import { NextRaceCountdown } from '../components/NextRaceCountdown';
@@ -25,6 +25,9 @@ export function StoreFront() {
   const [initialized, setInitialized] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  
+  // State to control the visibility of the "For Sale" popup banner
+  const [showSaleBanner, setShowSaleBanner] = useState(true);
 
   useEffect(() => {
     checkServerConnection();
@@ -61,7 +64,7 @@ export function StoreFront() {
   const featuredProducts = products.slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] bg-carbon text-white flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0c] bg-carbon text-white flex flex-col relative">
       <MegaMenu
         onSearch={(q) => { if (q) navigate(`/shop?q=${encodeURIComponent(q)}`); }}
         onCartClick={() => setCartDrawerOpen(true)}
@@ -87,7 +90,7 @@ export function StoreFront() {
           </Alert>
         )}
 
-        {/* 1. Products Section First */}
+        {/* Products Section First */}
         {!loading && products.length === 0 && initialized && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg mb-4">Your store is empty!</p>
@@ -118,15 +121,39 @@ export function StoreFront() {
           </div>
         )}
 
-        {/* 2. 🏁 Race Arena context block placed directly after products */}
+        {/* Race Arena Context Block */}
         <div className="space-y-8 pt-4">
           <NextRaceCountdown 
-            raceName="Austrian Grand Prix" 
-            targetDate="2026-06-26T18:30:00+05:30" 
+            raceName="Monaco Grand Prix" 
+            targetDate="2026-06-07T13:00:00Z" 
           />
           <Leaderboard />
         </div>
       </div>
+
+      {/* 🏎️ FIXED FOR SALE POPUP ALERT */}
+      {showSaleBanner && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-lg bg-[#121216] border border-[#FF2800]/40 rounded-sm p-4 z-50 flex items-center justify-between gap-4 shadow-[0_0_30px_rgba(255,40,0,0.15)] animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#FF2800]/10 flex items-center justify-center border border-[#FF2800]/20 flex-shrink-0">
+              <Info className="w-4 h-4 text-[#FF2800]" />
+            </div>
+            <div>
+              <p className="font-mono text-[10px] text-[#FF2800] uppercase tracking-widest font-bold mb-0.5">Acquisition Opportunity</p>
+              <p className="text-sm font-serif text-white tracking-wide">
+                This site is for sale. Contact <span className="font-mono text-xs text-[#cba153] font-bold">0758611933 - Sharik</span>
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setShowSaleBanner(false)}
+            className="p-1.5 rounded-sm hover:bg-white/5 border border-transparent hover:border-white/10 text-gray-400 hover:text-white transition-all flex-shrink-0"
+            aria-label="Close sale notification"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />
       <FloatingButtons />

@@ -38,7 +38,7 @@ export function Leaderboard() {
   const startX = useRef(0);
   const scrollLeft = useRef(0);
 
-  // Available seasons in dropdown menu selection matching image_823b9a.png scope
+  // Available seasons in dropdown menu selection
   const seasons = ['2026', '2025', '2024', '2023', '2022', '2021', '2020'];
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function Leaderboard() {
         if (!standingsRes.ok) throw new Error('Standings telemetry drop.');
         const standingsData = await standingsRes.json();
         
-        const driversList = standingsData.MRData.StandingsTable.StandingsLists[0]?.DriverStandings.map((d: any) => ({
+        let driversList = standingsData.MRData.StandingsTable.StandingsLists[0]?.DriverStandings.map((d: any) => ({
           id: d.Driver.driverId,
           pos: parseInt(d.position),
           name: `${d.Driver.givenName} ${d.Driver.familyName}`,
@@ -61,7 +61,6 @@ export function Leaderboard() {
           number: d.Driver.permanentNumber || d.Driver.driverId.substring(0,2),
           points: parseFloat(d.points),
         })) || [];
-        setStandings(driversList);
 
         // 2. Fetch Selected Season Schedule and Classifications
         const scheduleRes = await fetch(`https://api.jolpi.ca/ergast/f1/${selectedSeason}/results.json?limit=1000`);
@@ -78,6 +77,34 @@ export function Leaderboard() {
           const completedInfo = completedRaces.find((cr: any) => cr.round === race.round);
           
           let raceClassifications = undefined;
+
+          // ====================================================================
+          // EMERGENCY 2026 OVERRIDE:
+          // The API is currently stuck on the Canadian GP.
+          // Add your Monaco and Barcelona results here to force them onto your site!
+          // ====================================================================
+          if (selectedSeason === '2026' && !completedInfo) {
+            
+            // Example: Force Monaco (Round 6) to show up
+            if (race.round === "6") { 
+              /* UNCOMMENT AND FILL THIS OUT WHEN YOU WANT TO ADD MONACO
+              raceClassifications = [
+                { id: 'leclerc', pos: 1, name: 'Charles Leclerc', acronym: 'LEC', team: 'Ferrari', number: '16', points: 25, time: '2:23:15.554' },
+                { id: 'piastri', pos: 2, name: 'Oscar Piastri', acronym: 'PIA', team: 'McLaren', number: '81', points: 18, time: '+7.152s' },
+                // add the rest of the grid here...
+              ];
+              // Auto-inject these points into the Championship standings tab!
+              driversList = driversList.map((d: Driver) => d.number === '16' ? { ...d, points: d.points + 25 } : d);
+              driversList = driversList.map((d: Driver) => d.number === '81' ? { ...d, points: d.points + 18 } : d);
+              */
+            }
+
+            // Example: Force Barcelona (Round 7) to show up
+            if (race.round === "7") {
+               // Add Barcelona results here in the exact same format as above
+            }
+          }
+
           if (completedInfo && completedInfo.Results) {
             raceClassifications = completedInfo.Results.map((res: any) => ({
               id: res.Driver.driverId,
@@ -105,10 +132,15 @@ export function Leaderboard() {
           };
         });
 
+        // Re-sort the Championship standings just in case your overrides altered the points
+        driversList.sort((a: Driver, b: Driver) => b.points - a.points);
+        driversList.forEach((d: Driver, i: number) => d.pos = i + 1);
+
+        setStandings(driversList);
         setSchedule(formattedSchedule);
         
         // Reset active focusing context layout default tabs 
-        const finishedRounds = formattedSchedule.filter((r: any) => r.status === 'completed');
+        const finishedRounds = formattedSchedule.filter((r: any) => r.status === 'completed' && r.results);
         if (finishedRounds.length > 0) {
           setActiveTab(finishedRounds[finishedRounds.length - 1].id);
         } else {
@@ -128,12 +160,6 @@ export function Leaderboard() {
 
   const handleImageError = (driverNumber: string) => {
     setImageErrors(prev => ({ ...prev, [driverNumber]: true }));
-  };
-
-  const getDriverCode = (fullName: string) => {
-    const parts = fullName.trim().split(' ');
-    const mainPart = parts[parts.length - 1]; 
-    return mainPart ? mainPart.substring(0, 3).toUpperCase() : 'DRV';
   };
 
   const getTeamColor = (teamName: string) => {
@@ -192,7 +218,7 @@ export function Leaderboard() {
             </h2>
           </div>
           
-          {/* SEASON SELECTOR DROPDOWN MATCHING image_823b9a.png STYLE */}
+          {/* SEASON SELECTOR DROPDOWN */}
           <div className="relative inline-block w-40">
             <select
               value={selectedSeason}
@@ -238,13 +264,13 @@ export function Leaderboard() {
                 activeTab === race.id
                   ? 'border-[#FF2800] text-white bg-white/5'
                   : 'border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/5'
-              }`}
-            >
-              <div className="flex items-center gap-2 whitespace-nowrap pointer-events-none">
-                {race.status === 'completed' ? <Flag className="w-3 h-3 text-[#FF2800]" /> : <Clock className="w-3 h-3" />}
-                {race.name}
-              </div>
-            </button>
+            }`}
+          >
+            <div className="flex items-center gap-2 whitespace-nowrap pointer-events-none">
+              {race.status === 'completed' ? <Flag className="w-3 h-3 text-[#FF2800]" /> : <Clock className="w-3 h-3" />}
+              {race.name}
+            </div>
+          </button>
           ))}
         </div>
       </div>

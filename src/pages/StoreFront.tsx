@@ -131,29 +131,64 @@ export function StoreFront() {
         </div>
       </div>
 
-      {/* 🏎️ FIXED FOR SALE POPUP ALERT */}
-      {showSaleBanner && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-lg bg-[#121216] border border-[#FF2800]/40 rounded-sm p-4 z-50 flex items-center justify-between gap-4 shadow-[0_0_30px_rgba(255,40,0,0.15)] animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#FF2800]/10 flex items-center justify-center border border-[#FF2800]/20 flex-shrink-0">
-              <Info className="w-4 h-4 text-[#FF2800]" />
-            </div>
-            <div>
-              <p className="font-mono text-[10px] text-[#FF2800] uppercase tracking-widest font-bold mb-0.5">Acquisition Opportunity</p>
-              <p className="text-sm font-serif text-white tracking-wide">
-                This site is for sale. Contact <span className="font-mono text-xs text-[#cba153] font-bold">0758611933 - Sharik</span>
-              </p>
-            </div>
-          </div>
-          <button 
-            onClick={() => setShowSaleBanner(false)}
-            className="p-1.5 rounded-sm hover:bg-white/5 border border-transparent hover:border-white/10 text-gray-400 hover:text-white transition-all flex-shrink-0"
-            aria-label="Close sale notification"
-          >
-            <X className="w-4 h-4" />
-          </button>
+{/* 🏎️ PREMIUM ACQUISITION / INVESTMENT BANNER */}
+{showSaleBanner && (
+  <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-2xl bg-[#0f0f13] border border-[#FF2800]/50 rounded-sm p-5 z-50 shadow-[0_0_40px_rgba(255,40,0,0.2)] animate-in fade-in slide-in-from-bottom-6 duration-300 backdrop-blur-md">
+    {/* Close Button Anchor */}
+    <button 
+      onClick={() => setShowSaleBanner(false)}
+      className="absolute top-4 right-4 p-1 rounded-sm border border-transparent hover:border-white/10 hover:bg-white/5 text-gray-500 hover:text-white transition-all z-10"
+      aria-label="Dismiss offering prospectus"
+    >
+      <X className="w-4 h-4" />
+    </button>
+
+    <div className="flex flex-col md:flex-row gap-5 items-start">
+      {/* Icon Profile Badge */}
+      <div className="w-12 h-12 rounded-sm bg-[#FF2800]/10 flex items-center justify-center border border-[#FF2800]/30 flex-shrink-0 mx-auto md:mx-0">
+        <Trophy className="w-5 h-5 text-[#FF2800]" />
+      </div>
+
+      {/* Sales Pitch and Investment Prospectus Copy */}
+      <div className="flex-1 text-center md:text-left space-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-center md:justify-start gap-2">
+          <span className="font-mono text-[10px] text-[#FF2800] uppercase tracking-widest font-black bg-[#FF2800]/10 border border-[#FF2800]/20 px-2 py-0.5 rounded-sm w-fit mx-auto md:mx-0">
+            Premium Turnkey Venture
+          </span>
+          <span className="font-mono text-[10px] text-emerald-400 uppercase tracking-widest font-bold w-fit mx-auto md:mx-0">
+            • Live 2026 Teleboard Core Enabled
+          </span>
         </div>
-      )}
+
+        <h3 className="text-xl font-serif text-white tracking-wide leading-tight">
+          If you are planning on investing in a business, <span className="text-[#FF2800]">this is your chance.</span>
+        </h3>
+        
+        <p className="text-xs text-gray-400 leading-relaxed font-sans max-w-xl">
+          Acquire a highly specialized, fully integrated e-commerce architecture engineered directly for the global motorsport niche. This storefront captures premium, high-intent traffic by attracting dedicated <strong className="text-white font-medium">F1 enthusiasts</strong> with real-time race data analytics, offering a flawless transition from live fan engagement directly into targeted merchandising streams.
+        </p>
+
+        {/* Call To Action Row */}
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 text-xs font-mono tracking-wider">
+          <p className="text-gray-400 uppercase text-[11px]">
+            Direct Principal Contact: 
+            <span className="text-[#cba153] font-bold ml-1.5 selection:bg-white select-all">
+              0758611933 – SHARIK
+            </span>
+          </p>
+          <a 
+            href="https://wa.me/94758611933?text=I%20am%20interested%20in%20discussing%20the%20acquisition%20of%20your%20F1%20platform." 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-[10px] uppercase font-bold text-black bg-white hover:bg-gray-200 px-3 py-1.5 rounded-sm transition-colors tracking-widest shadow-sm"
+          >
+            Inquire via WA
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       <CartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} whatsappNumber={WHATSAPP_NUMBER} />
       <FloatingButtons />

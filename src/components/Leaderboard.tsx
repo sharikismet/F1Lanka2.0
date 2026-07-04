@@ -78,33 +78,6 @@ export function Leaderboard() {
           
           let raceClassifications = undefined;
 
-          // ====================================================================
-          // EMERGENCY 2026 OVERRIDE:
-          // The API is currently stuck on the Canadian GP.
-          // Add your Monaco and Barcelona results here to force them onto your site!
-          // ====================================================================
-          if (selectedSeason === '2026' && !completedInfo) {
-            
-            // Example: Force Monaco (Round 6) to show up
-            if (race.round === "6") { 
-              /* UNCOMMENT AND FILL THIS OUT WHEN YOU WANT TO ADD MONACO
-              raceClassifications = [
-                { id: 'leclerc', pos: 1, name: 'Charles Leclerc', acronym: 'LEC', team: 'Ferrari', number: '16', points: 25, time: '2:23:15.554' },
-                { id: 'piastri', pos: 2, name: 'Oscar Piastri', acronym: 'PIA', team: 'McLaren', number: '81', points: 18, time: '+7.152s' },
-                // add the rest of the grid here...
-              ];
-              // Auto-inject these points into the Championship standings tab!
-              driversList = driversList.map((d: Driver) => d.number === '16' ? { ...d, points: d.points + 25 } : d);
-              driversList = driversList.map((d: Driver) => d.number === '81' ? { ...d, points: d.points + 18 } : d);
-              */
-            }
-
-            // Example: Force Barcelona (Round 7) to show up
-            if (race.round === "7") {
-               // Add Barcelona results here in the exact same format as above
-            }
-          }
-
           if (completedInfo && completedInfo.Results) {
             raceClassifications = completedInfo.Results.map((res: any) => ({
               id: res.Driver.driverId,
@@ -132,20 +105,15 @@ export function Leaderboard() {
           };
         });
 
-        // Re-sort the Championship standings just in case your overrides altered the points
+        // Re-sort the Championship standings
         driversList.sort((a: Driver, b: Driver) => b.points - a.points);
         driversList.forEach((d: Driver, i: number) => d.pos = i + 1);
 
         setStandings(driversList);
         setSchedule(formattedSchedule);
         
-        // Reset active focusing context layout default tabs 
-        const finishedRounds = formattedSchedule.filter((r: any) => r.status === 'completed' && r.results);
-        if (finishedRounds.length > 0) {
-          setActiveTab(finishedRounds[finishedRounds.length - 1].id);
-        } else {
-          setActiveTab('champ');
-        }
+        // Always default to Championship Scores on load
+        setActiveTab('champ');
 
         setLoading(false);
       } catch (err) {
@@ -252,7 +220,7 @@ export function Leaderboard() {
           >
             <div className="flex items-center gap-2 whitespace-nowrap">
               <Trophy className="w-3 h-3" />
-              Standings
+              CHAMPIONSHIP SCORES
             </div>
           </button>
 

@@ -23,7 +23,6 @@ interface Race {
 }
 
 export function Leaderboard() {
-  // Season tracking state - supporting historical archives back to 2020
   const [selectedSeason, setSelectedSeason] = useState<string>('2026');
   const [activeTab, setActiveTab] = useState<string>('champ');
   const [loading, setLoading] = useState(true);
@@ -32,13 +31,11 @@ export function Leaderboard() {
   const [error, setError] = useState<string | null>(null);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-  // Navigation drag reference anchors
   const scrollRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
   const scrollLeft = useRef(0);
 
-  // Available seasons in dropdown menu selection
   const seasons = ['2026', '2025', '2024', '2023', '2022', '2021', '2020'];
 
   useEffect(() => {
@@ -47,7 +44,6 @@ export function Leaderboard() {
         setLoading(true);
         setError(null);
 
-        // 1. Fetch Selected Season Championship Standings
         const standingsRes = await fetch(`https://api.jolpi.ca/ergast/f1/${selectedSeason}/driverStandings.json`);
         if (!standingsRes.ok) throw new Error('Standings telemetry drop.');
         const standingsData = await standingsRes.json();
@@ -62,7 +58,6 @@ export function Leaderboard() {
           points: parseFloat(d.points),
         })) || [];
 
-        // 2. Fetch Selected Season Schedule and Classifications
         const scheduleRes = await fetch(`https://api.jolpi.ca/ergast/f1/${selectedSeason}/results.json?limit=1000`);
         if (!scheduleRes.ok) throw new Error('Results stream drop.');
         const scheduleData = await scheduleRes.json();
@@ -77,6 +72,111 @@ export function Leaderboard() {
           const completedInfo = completedRaces.find((cr: any) => cr.round === race.round);
           
           let raceClassifications = undefined;
+
+          // ====================================================================
+          // JOLPICA API DELAY OVERRIDE
+          // ====================================================================
+          if (selectedSeason === '2026' && !completedInfo) {
+            
+            // Monaco Override (Round 6)
+            if (race.round === "6") { 
+              raceClassifications = [
+                { id: 'antonelli', pos: 1, name: 'Kimi Antonelli', acronym: 'ANT', team: 'Mercedes', number: '12', points: 25, time: '2:23:31.243' },
+                { id: 'hamilton', pos: 2, name: 'Lewis Hamilton', acronym: 'HAM', team: 'Ferrari', number: '44', points: 18, time: '+6.271s' },
+                { id: 'gasly', pos: 3, name: 'Pierre Gasly', acronym: 'GAS', team: 'Alpine', number: '10', points: 15, time: '+20.369s' },
+                { id: 'hadjar', pos: 4, name: 'Isack Hadjar', acronym: 'HAD', team: 'Red Bull Racing', number: '6', points: 12, time: '+23.394s' },
+                { id: 'piastri', pos: 5, name: 'Oscar Piastri', acronym: 'PIA', team: 'McLaren', number: '81', points: 10, time: '+24.261s' },
+                { id: 'lawson', pos: 6, name: 'Liam Lawson', acronym: 'LAW', team: 'Racing Bulls', number: '30', points: 8, time: '+26.553s' },
+                { id: 'lindblad', pos: 7, name: 'Arvid Lindblad', acronym: 'LIN', team: 'Racing Bulls', number: '41', points: 6, time: '+29.010s' },
+                { id: 'albon', pos: 8, name: 'Alexander Albon', acronym: 'ALB', team: 'Williams', number: '23', points: 4, time: '+33.413s' },
+                { id: 'ocon', pos: 9, name: 'Esteban Ocon', acronym: 'OCO', team: 'Haas F1 Team', number: '31', points: 2, time: '+37.140s' },
+                { id: 'alonso', pos: 10, name: 'Fernando Alonso', acronym: 'ALO', team: 'Aston Martin', number: '14', points: 1, time: '+41.899s' },
+                { id: 'bortoleto', pos: 11, name: 'Gabriel Bortoleto', acronym: 'BOR', team: 'Audi', number: '5', points: 0, time: '+42.748s' },
+                { id: 'russell', pos: 12, name: 'George Russell', acronym: 'RUS', team: 'Mercedes', number: '63', points: 0, time: '+43.353s' },
+                { id: 'hulkenberg', pos: 13, name: 'Nico Hulkenberg', acronym: 'HUL', team: 'Audi', number: '27', points: 0, time: '+44.102s' },
+                { id: 'colapinto', pos: 14, name: 'Franco Colapinto', acronym: 'COL', team: 'Alpine', number: '43', points: 0, time: '+48.964s' },
+                { id: 'perez', pos: 15, name: 'Sergio Perez', acronym: 'PER', team: 'Cadillac', number: '11', points: 0, time: '+49.153s' },
+                { id: 'sainz', pos: 16, name: 'Carlos Sainz', acronym: 'SAI', team: 'Williams', number: '55', points: 0, time: 'DNF' },
+                { id: 'leclerc', pos: 17, name: 'Charles Leclerc', acronym: 'LEC', team: 'Ferrari', number: '16', points: 0, time: 'DNF' },
+                { id: 'stroll', pos: 18, name: 'Lance Stroll', acronym: 'STR', team: 'Aston Martin', number: '18', points: 0, time: 'DNF' },
+                { id: 'norris', pos: 19, name: 'Lando Norris', acronym: 'NOR', team: 'McLaren', number: '1', points: 0, time: 'DNF' },
+                { id: 'bearman', pos: 20, name: 'Oliver Bearman', acronym: 'BEA', team: 'Haas F1 Team', number: '87', points: 0, time: 'DNF' },
+                { id: 'bottas', pos: 21, name: 'Valtteri Bottas', acronym: 'BOT', team: 'Cadillac', number: '77', points: 0, time: 'DNF' },
+                { id: 'verstappen', pos: 22, name: 'Max Verstappen', acronym: 'VER', team: 'Red Bull Racing', number: '3', points: 0, time: 'DNF' }
+              ];
+              // Streamlined Points Injection
+              driversList = driversList.map((d: Driver) => {
+                const pointsToAdd = { '12': 25, '44': 18, '10': 15, '6': 12, '81': 10, '30': 8, '41': 6, '23': 4, '31': 2, '14': 1 }[d.number] || 0;
+                return { ...d, points: d.points + pointsToAdd };
+              });
+            }
+
+            // Barcelona Override (Round 7)
+            if (race.round === "7") { 
+              raceClassifications = [
+                { id: 'hamilton', pos: 1, name: 'Lewis Hamilton', acronym: 'HAM', team: 'Ferrari', number: '44', points: 25, time: '1:32:28.105' },
+                { id: 'russell', pos: 2, name: 'George Russell', acronym: 'RUS', team: 'Mercedes', number: '63', points: 18, time: '+19.561s' },
+                { id: 'norris', pos: 3, name: 'Lando Norris', acronym: 'NOR', team: 'McLaren', number: '1', points: 15, time: '+23.719s' },
+                { id: 'verstappen', pos: 4, name: 'Max Verstappen', acronym: 'VER', team: 'Red Bull Racing', number: '3', points: 12, time: '+40.497s' },
+                { id: 'piastri', pos: 5, name: 'Oscar Piastri', acronym: 'PIA', team: 'McLaren', number: '81', points: 10, time: '+58.661s' },
+                { id: 'hadjar', pos: 6, name: 'Isack Hadjar', acronym: 'HAD', team: 'Red Bull Racing', number: '6', points: 8, time: '+1 lap' },
+                { id: 'gasly', pos: 7, name: 'Pierre Gasly', acronym: 'GAS', team: 'Alpine', number: '10', points: 6, time: '+1 lap' },
+                { id: 'lawson', pos: 8, name: 'Liam Lawson', acronym: 'LAW', team: 'Racing Bulls', number: '30', points: 4, time: '+1 lap' },
+                { id: 'lindblad', pos: 9, name: 'Arvid Lindblad', acronym: 'LIN', team: 'Racing Bulls', number: '41', points: 2, time: '+1 lap' },
+                { id: 'colapinto', pos: 10, name: 'Franco Colapinto', acronym: 'COL', team: 'Alpine', number: '43', points: 1, time: '+1 lap' },
+                { id: 'bortoleto', pos: 11, name: 'Gabriel Bortoleto', acronym: 'BOR', team: 'Audi', number: '5', points: 0, time: '+2 laps' },
+                { id: 'sainz', pos: 12, name: 'Carlos Sainz', acronym: 'SAI', team: 'Williams', number: '55', points: 0, time: '+2 laps' },
+                { id: 'ocon', pos: 13, name: 'Esteban Ocon', acronym: 'OCO', team: 'Haas F1 Team', number: '31', points: 0, time: '+2 laps' },
+                { id: 'perez', pos: 14, name: 'Sergio Perez', acronym: 'PER', team: 'Cadillac', number: '11', points: 0, time: '+3 laps' },
+                { id: 'leclerc', pos: 15, name: 'Charles Leclerc', acronym: 'LEC', team: 'Ferrari', number: '16', points: 0, time: 'DNF' },
+                { id: 'antonelli', pos: 16, name: 'Kimi Antonelli', acronym: 'ANT', team: 'Mercedes', number: '12', points: 0, time: 'DNF' },
+                { id: 'bearman', pos: 17, name: 'Oliver Bearman', acronym: 'BEA', team: 'Haas F1 Team', number: '87', points: 0, time: 'DNF' },
+                { id: 'albon', pos: 18, name: 'Alexander Albon', acronym: 'ALB', team: 'Williams', number: '23', points: 0, time: 'DNF' },
+                { id: 'alonso', pos: 19, name: 'Fernando Alonso', acronym: 'ALO', team: 'Aston Martin', number: '14', points: 0, time: 'DNF' },
+                { id: 'hulkenberg', pos: 20, name: 'Nico Hulkenberg', acronym: 'HUL', team: 'Audi', number: '27', points: 0, time: 'DNF' },
+                { id: 'bottas', pos: 21, name: 'Valtteri Bottas', acronym: 'BOT', team: 'Cadillac', number: '77', points: 0, time: 'DNF' },
+                { id: 'stroll', pos: 22, name: 'Lance Stroll', acronym: 'STR', team: 'Aston Martin', number: '18', points: 0, time: 'DNF' }
+              ];
+              // Streamlined Points Injection
+              driversList = driversList.map((d: Driver) => {
+                const pointsToAdd = { '44': 25, '63': 18, '1': 15, '3': 12, '81': 10, '6': 8, '10': 6, '30': 4, '41': 2, '43': 1 }[d.number] || 0;
+                return { ...d, points: d.points + pointsToAdd };
+              });
+            }
+
+            // Austria Override (Round 8)
+            if (race.round === "8") { 
+              raceClassifications = [
+                { id: 'russell', pos: 1, name: 'George Russell', acronym: 'RUS', team: 'Mercedes', number: '63', points: 25, time: '1:26:37.979' },
+                { id: 'verstappen', pos: 2, name: 'Max Verstappen', acronym: 'VER', team: 'Red Bull Racing', number: '3', points: 18, time: '+1.611s' },
+                { id: 'antonelli', pos: 3, name: 'Kimi Antonelli', acronym: 'ANT', team: 'Mercedes', number: '12', points: 15, time: '+1.986s' },
+                { id: 'piastri', pos: 4, name: 'Oscar Piastri', acronym: 'PIA', team: 'McLaren', number: '81', points: 12, time: '+21.809s' },
+                { id: 'hamilton', pos: 5, name: 'Lewis Hamilton', acronym: 'HAM', team: 'Ferrari', number: '44', points: 10, time: '+26.393s' },
+                { id: 'hadjar', pos: 6, name: 'Isack Hadjar', acronym: 'HAD', team: 'Red Bull Racing', number: '6', points: 8, time: '+29.399s' },
+                { id: 'norris', pos: 7, name: 'Lando Norris', acronym: 'NOR', team: 'McLaren', number: '1', points: 6, time: '+31.505s' },
+                { id: 'leclerc', pos: 8, name: 'Charles Leclerc', acronym: 'LEC', team: 'Ferrari', number: '16', points: 4, time: '+45.659s' },
+                { id: 'lawson', pos: 9, name: 'Liam Lawson', acronym: 'LAW', team: 'Racing Bulls', number: '30', points: 2, time: '+1 lap' },
+                { id: 'lindblad', pos: 10, name: 'Arvid Lindblad', acronym: 'LIN', team: 'Racing Bulls', number: '41', points: 1, time: '+1 lap' },
+                { id: 'bortoleto', pos: 11, name: 'Gabriel Bortoleto', acronym: 'BOR', team: 'Audi', number: '5', points: 0, time: '+1 lap' },
+                { id: 'hulkenberg', pos: 12, name: 'Nico Hulkenberg', acronym: 'HUL', team: 'Audi', number: '27', points: 0, time: '+1 lap' },
+                { id: 'gasly', pos: 13, name: 'Pierre Gasly', acronym: 'GAS', team: 'Alpine', number: '10', points: 0, time: '+1 lap' },
+                { id: 'bearman', pos: 14, name: 'Oliver Bearman', acronym: 'BEA', team: 'Haas F1 Team', number: '87', points: 0, time: '+1 lap' },
+                { id: 'colapinto', pos: 15, name: 'Franco Colapinto', acronym: 'COL', team: 'Alpine', number: '43', points: 0, time: '+1 lap' },
+                { id: 'ocon', pos: 16, name: 'Esteban Ocon', acronym: 'OCO', team: 'Haas F1 Team', number: '31', points: 0, time: '+2 laps' },
+                { id: 'albon', pos: 17, name: 'Alexander Albon', acronym: 'ALB', team: 'Williams', number: '23', points: 0, time: '+2 laps' },
+                { id: 'alonso', pos: 18, name: 'Fernando Alonso', acronym: 'ALO', team: 'Aston Martin', number: '14', points: 0, time: '+3 laps' },
+                { id: 'stroll', pos: 19, name: 'Lance Stroll', acronym: 'STR', team: 'Aston Martin', number: '18', points: 0, time: 'DNF' },
+                { id: 'sainz', pos: 20, name: 'Carlos Sainz', acronym: 'SAI', team: 'Williams', number: '55', points: 0, time: 'DNF' },
+                { id: 'perez', pos: 21, name: 'Sergio Perez', acronym: 'PER', team: 'Cadillac', number: '11', points: 0, time: 'DNF' },
+                { id: 'bottas', pos: 22, name: 'Valtteri Bottas', acronym: 'BOT', team: 'Cadillac', number: '77', points: 0, time: 'DNF' }
+              ];
+              // Streamlined Points Injection
+              driversList = driversList.map((d: Driver) => {
+                const pointsToAdd = { '63': 25, '3': 18, '12': 15, '81': 12, '44': 10, '6': 8, '1': 6, '16': 4, '30': 2, '41': 1 }[d.number] || 0;
+                return { ...d, points: d.points + pointsToAdd };
+              });
+            }
+          }
 
           if (completedInfo && completedInfo.Results) {
             raceClassifications = completedInfo.Results.map((res: any) => ({

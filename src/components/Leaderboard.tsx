@@ -75,6 +75,7 @@ export function Leaderboard() {
 
           // ====================================================================
           // JOLPICA API DELAY OVERRIDE
+          // Points injection removed - relying purely on the live API standings
           // ====================================================================
           if (selectedSeason === '2026' && !completedInfo) {
             
@@ -104,11 +105,6 @@ export function Leaderboard() {
                 { id: 'bottas', pos: 21, name: 'Valtteri Bottas', acronym: 'BOT', team: 'Cadillac', number: '77', points: 0, time: 'DNF' },
                 { id: 'verstappen', pos: 22, name: 'Max Verstappen', acronym: 'VER', team: 'Red Bull Racing', number: '3', points: 0, time: 'DNF' }
               ];
-              // Streamlined Points Injection
-              driversList = driversList.map((d: Driver) => {
-                const pointsToAdd = { '12': 25, '44': 18, '10': 15, '6': 12, '81': 10, '30': 8, '41': 6, '23': 4, '31': 2, '14': 1 }[d.number] || 0;
-                return { ...d, points: d.points + pointsToAdd };
-              });
             }
 
             // Barcelona Override (Round 7)
@@ -137,11 +133,6 @@ export function Leaderboard() {
                 { id: 'bottas', pos: 21, name: 'Valtteri Bottas', acronym: 'BOT', team: 'Cadillac', number: '77', points: 0, time: 'DNF' },
                 { id: 'stroll', pos: 22, name: 'Lance Stroll', acronym: 'STR', team: 'Aston Martin', number: '18', points: 0, time: 'DNF' }
               ];
-              // Streamlined Points Injection
-              driversList = driversList.map((d: Driver) => {
-                const pointsToAdd = { '44': 25, '63': 18, '1': 15, '3': 12, '81': 10, '6': 8, '10': 6, '30': 4, '41': 2, '43': 1 }[d.number] || 0;
-                return { ...d, points: d.points + pointsToAdd };
-              });
             }
 
             // Austria Override (Round 8)
@@ -170,11 +161,6 @@ export function Leaderboard() {
                 { id: 'perez', pos: 21, name: 'Sergio Perez', acronym: 'PER', team: 'Cadillac', number: '11', points: 0, time: 'DNF' },
                 { id: 'bottas', pos: 22, name: 'Valtteri Bottas', acronym: 'BOT', team: 'Cadillac', number: '77', points: 0, time: 'DNF' }
               ];
-              // Streamlined Points Injection
-              driversList = driversList.map((d: Driver) => {
-                const pointsToAdd = { '63': 25, '3': 18, '12': 15, '81': 12, '44': 10, '6': 8, '1': 6, '16': 4, '30': 2, '41': 1 }[d.number] || 0;
-                return { ...d, points: d.points + pointsToAdd };
-              });
             }
           }
 

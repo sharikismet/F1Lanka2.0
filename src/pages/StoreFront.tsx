@@ -124,8 +124,8 @@ export function StoreFront() {
         {/* Race Arena Context Block */}
         <div className="space-y-8 pt-4">
           <NextRaceCountdown 
-            raceName="British Grand Prix" 
-            targetDate="2026-07-05T19:30:00+05:30"
+            raceName="Belgian Grand Prix" 
+            targetDate="2026-07-19T18:30:00+05:30"
           />
           <Leaderboard />
         </div>

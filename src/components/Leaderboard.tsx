@@ -244,7 +244,10 @@ export function Leaderboard() {
     setImageErrors(prev => ({ ...prev, [driverNumber]: true }));
   };
 
-  const getTeamColor = (teamName: string) => {
+  const getTeamColor = (teamName: string | undefined) => {
+    // Safety check: if teamName is undefined, return a default gray
+    if (!teamName) return '#505050'; 
+    
     const name = teamName.toLowerCase();
     if (name.includes('mercedes')) return '#00A19B';
     if (name.includes('ferrari')) return '#E80020';

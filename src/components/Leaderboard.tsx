@@ -75,7 +75,6 @@ export function Leaderboard() {
 
           // ====================================================================
           // JOLPICA API DELAY OVERRIDE
-          // Points injection removed - relying purely on the live API standings
           // ====================================================================
           if (selectedSeason === '2026' && !completedInfo) {
             
@@ -223,6 +222,35 @@ export function Leaderboard() {
               ];
               race.status = 'completed';
             }
+
+            // Hungarian Override (Round 11)
+            if (race.round === "11" || race.raceName.includes("Hungarian")) {
+              raceClassifications = [
+                { id: 'norris', pos: 1, name: 'Lando Norris', acronym: 'NOR', team: 'McLaren', number: '1', points: 25, time: '1:39:56.180' },
+                { id: 'verstappen', pos: 2, name: 'Max Verstappen', acronym: 'VER', team: 'Red Bull Racing', number: '3', points: 18, time: '+15.080s' },
+                { id: 'antonelli', pos: 3, name: 'Kimi Antonelli', acronym: 'ANT', team: 'Mercedes', number: '12', points: 15, time: '+18.728s' },
+                { id: 'leclerc', pos: 4, name: 'Charles Leclerc', acronym: 'LEC', team: 'Ferrari', number: '16', points: 12, time: '+23.840s' },
+                { id: 'hamilton', pos: 5, name: 'Lewis Hamilton', acronym: 'HAM', team: 'Ferrari', number: '44', points: 10, time: '+24.540s' },
+                { id: 'hadjar', pos: 6, name: 'Isack Hadjar', acronym: 'HAD', team: 'Red Bull Racing', number: '6', points: 8, time: '+55.488s' },
+                { id: 'russell', pos: 7, name: 'George Russell', acronym: 'RUS', team: 'Mercedes', number: '63', points: 6, time: '+57.503s' },
+                { id: 'lawson', pos: 8, name: 'Liam Lawson', acronym: 'LAW', team: 'Racing Bulls', number: '30', points: 4, time: '+1 lap' },
+                { id: 'hulkenberg', pos: 9, name: 'Nico Hulkenberg', acronym: 'HUL', team: 'Audi', number: '27', points: 2, time: '+1 lap' },
+                { id: 'lindblad', pos: 10, name: 'Arvid Lindblad', acronym: 'LIN', team: 'Racing Bulls', number: '41', points: 1, time: '+1 lap' },
+                { id: 'bortoleto', pos: 11, name: 'Gabriel Bortoleto', acronym: 'BOR', team: 'Audi', number: '5', points: 0, time: '+1 lap' },
+                { id: 'gasly', pos: 12, name: 'Pierre Gasly', acronym: 'GAS', team: 'Alpine', number: '10', points: 0, time: '+1 lap' },
+                { id: 'stroll', pos: 13, name: 'Lance Stroll', acronym: 'STR', team: 'Aston Martin', number: '18', points: 0, time: '+1 lap' },
+                { id: 'alonso', pos: 14, name: 'Fernando Alonso', acronym: 'ALO', team: 'Aston Martin', number: '14', points: 0, time: '+1 lap' },
+                { id: 'colapinto', pos: 15, name: 'Franco Colapinto', acronym: 'COL', team: 'Alpine', number: '43', points: 0, time: '+2 laps' },
+                { id: 'ocon', pos: 16, name: 'Esteban Ocon', acronym: 'OCO', team: 'Haas F1 Team', number: '31', points: 0, time: '+2 laps' },
+                { id: 'albon', pos: 17, name: 'Alexander Albon', acronym: 'ALB', team: 'Williams', number: '23', points: 0, time: '+2 laps' },
+                { id: 'sainz', pos: 18, name: 'Carlos Sainz', acronym: 'SAI', team: 'Williams', number: '55', points: 0, time: '+2 laps' },
+                { id: 'bearman', pos: 19, name: 'Oliver Bearman', acronym: 'BEA', team: 'Haas F1 Team', number: '87', points: 0, time: '+2 laps' },
+                { id: 'piastri', pos: 20, name: 'Oscar Piastri', acronym: 'PIA', team: 'McLaren', number: '81', points: 0, time: 'DNF' },
+                { id: 'perez', pos: 21, name: 'Sergio Perez', acronym: 'PER', team: 'Cadillac', number: '11', points: 0, time: 'DNF' },
+                { id: 'bottas', pos: 22, name: 'Valtteri Bottas', acronym: 'BOT', team: 'Cadillac', number: '77', points: 0, time: 'DNF' }
+              ];
+              race.status = 'completed';
+            }
           }
 
           if (completedInfo && completedInfo.Results) {
@@ -333,6 +361,8 @@ export function Leaderboard() {
               Historical Statistics Grid
             </h2>
           </div>
+          
+          {/* SEASON SELECTOR DROPDOWN */}
           <div className="relative inline-block w-40">
             <select
               value={selectedSeason}
@@ -346,6 +376,8 @@ export function Leaderboard() {
             <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
+        
+        {/* HORIZONTAL SWIPE MENU TABS */}
         <div 
           ref={scrollRef}
           onMouseDown={onMouseDown}

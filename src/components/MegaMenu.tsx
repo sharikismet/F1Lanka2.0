@@ -34,7 +34,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
   // GP Countdown
   useEffect(() => {
     // Monaco GP: June 7, 2026 18:30:00 (Colombo Time)
-    const targetDate = new Date('2026-08-23T18:30:00+05:30').getTime();
+    const targetDate = new Date('2026-09-06T18:30:00+05:30').getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();

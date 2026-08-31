@@ -87,7 +87,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
           Free shipping on qualifying orders
         </div>
         <div className="text-white/90 whitespace-nowrap flex-shrink-0">
-          <span className="hidden sm:inline">Dutch Grand Prix • </span><span className="text-[#FF2800]">{timeLeft}</span>
+          <span className="hidden sm:inline">Italian Grand Prix • </span><span className="text-[#FF2800]">{timeLeft}</span>
         </div>
       </div>
 

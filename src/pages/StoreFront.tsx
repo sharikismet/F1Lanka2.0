@@ -125,7 +125,7 @@ export function StoreFront() {
         <div className="space-y-8 pt-4">
           <NextRaceCountdown 
             raceName="Italian Grand Prix" 
-            targetDate="2026-09-06T18:30:00+05:30"
+            targetDate="2026-08-23T18:30:00+05:30"
           />
           <Leaderboard />
         </div>
@@ -133,17 +133,17 @@ export function StoreFront() {
 
       {/* 🏎️ PREMIUM ACQUISITION / INVESTMENT BANNER */}
       {showSaleBanner && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-2xl bg-[#0f0f13] border border-[#FF2800]/50 rounded-sm p-5 z-50 shadow-[0_0_40px_rgba(255,40,0,0.2)] animate-in fade-in slide-in-from-bottom-6 duration-300 backdrop-blur-md">
+        <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-[95%] sm:w-[92%] max-w-2xl max-h-[85vh] overflow-y-auto custom-scrollbar bg-[#0f0f13] border border-[#FF2800]/50 rounded-sm p-5 sm:p-6 z-50 shadow-[0_0_40px_rgba(255,40,0,0.2)] animate-in fade-in slide-in-from-bottom-6 duration-300 backdrop-blur-md">
           {/* Close Button Anchor */}
           <button 
             onClick={() => setShowSaleBanner(false)}
-            className="absolute top-4 right-4 p-1 rounded-sm border border-transparent hover:border-white/10 hover:bg-white/5 text-gray-500 hover:text-white transition-all z-10"
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-black/60 border border-white/10 hover:border-white/30 hover:bg-white/10 text-gray-400 hover:text-white transition-all z-[60] backdrop-blur-md"
             aria-label="Dismiss offering prospectus"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
 
-          <div className="flex flex-col md:flex-row gap-5 items-start">
+          <div className="flex flex-col md:flex-row gap-5 items-start mt-2 sm:mt-0">
             {/* Icon Profile Badge */}
             <div className="w-12 h-12 rounded-sm bg-[#FF2800]/10 flex items-center justify-center border border-[#FF2800]/30 flex-shrink-0 mx-auto md:mx-0">
               <Trophy className="w-5 h-5 text-[#FF2800]" />
@@ -161,7 +161,7 @@ export function StoreFront() {
               </div>
 
               <div className="space-y-1">
-                <h3 className="text-xl md:text-2xl font-serif text-white tracking-wide leading-tight">
+                <h3 className="text-xl md:text-2xl font-serif text-white tracking-wide leading-tight pr-4 sm:pr-0">
                   Acquire a high-traffic, automated e-commerce platform with <span className="text-[#FF2800]">massive growth potential.</span>
                 </h3>
                 <h3 className="text-sm md:text-base font-serif text-gray-300 tracking-wide leading-tight mt-1">

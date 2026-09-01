@@ -125,7 +125,7 @@ export function StoreFront() {
         <div className="space-y-8 pt-4">
           <NextRaceCountdown 
             raceName="Italian Grand Prix" 
-            targetDate="2026-08-23T18:30:00+05:30"
+            targetDate="2026-09-06T18:30:00+05:30"
           />
           <Leaderboard />
         </div>

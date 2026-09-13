@@ -34,7 +34,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
   // GP Countdown
   useEffect(() => {
     // Monaco GP: June 7, 2026 18:30:00 (Colombo Time)
-    const targetDate = new Date('2026-09-06T18:30:00+05:30').getTime();
+    const targetDate = new Date('2026-09-26T18:30:00+05:30').getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -87,7 +87,7 @@ export function MegaMenu({ onSearch, onCartClick, onCategorySelect, onGenderSele
           Free shipping on qualifying orders
         </div>
         <div className="text-white/90 whitespace-nowrap flex-shrink-0">
-          <span className="hidden sm:inline">Italian Grand Prix • </span><span className="text-[#FF2800]">{timeLeft}</span>
+          <span className="hidden sm:inline">Azerbaijan Grand Prix • </span><span className="text-[#FF2800]">{timeLeft}</span>
         </div>
       </div>
 

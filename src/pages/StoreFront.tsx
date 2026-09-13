@@ -76,6 +76,7 @@ export function StoreFront() {
       <HeroBanner onShopNow={() => navigate('/shop')} />
       <ShopByTeamScroll onTeamSelect={() => {}} />
 
+
       <div className="container mx-auto px-4 py-8 flex-1 space-y-16">
         {serverError && (
           <Alert variant="destructive" className="mb-6">
@@ -124,8 +125,8 @@ export function StoreFront() {
         {/* Race Arena Context Block */}
         <div className="space-y-8 pt-4">
           <NextRaceCountdown 
-            raceName="Italian Grand Prix" 
-            targetDate="2026-09-06T18:30:00+05:30"
+            raceName="Azerbaijan Grand Prix" 
+            targetDate="2026-09-26T18:30:00+05:30"
           />
           <Leaderboard />
         </div>
